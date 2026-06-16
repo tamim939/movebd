@@ -29,11 +29,13 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
   }, [step, timeLeft]);
 
   const handleReturnToBot = async () => {
-    const chatId = user?.id; 
+    // Check user object, then check URL params directly as a final fallback
+    const urlParams = new URL(window.location.href).searchParams;
+    const chatId = user?.id || urlParams.get('user_id') || urlParams.get('chat_id');
     
     if (!chatId) {
-       console.error("Missing chatId. User object:", user);
-       alert("Telegram User ID not found. Please open this app inside Telegram through the Bot.");
+       console.error("Missing chatId. User object:", user, "URL Params:", Array.from(urlParams.entries()));
+       alert("Telegram User ID not found. Please make sure you joined @movebd_bot and opened the app from there.");
        return;
     }
 
@@ -60,28 +62,28 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
         result = JSON.parse(responseText);
       } catch (parseErr) {
         console.error("Failed to parse API response:", responseText);
-        throw new Error("Server returned an invalid response. Please try again.");
+        throw new Error("Server returned an invalid response.");
       }
       
       if (!response.ok || !result.ok) {
         console.error("API Delivery failure:", result);
-        throw new Error(result.error || "Bot could not deliver the message. Ensure you have started @movebd_bot.");
+        throw new Error(result.error || "Message could not be delivered.");
       }
 
       console.log("Bot delivery confirmed:", result);
       
-      // Redirect to Bot
+      // Success - Redirect user back to bot
       if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.close();
       } else {
-        // Fallback for browsers
-        window.open('https://t.me/movebd_bot', '_blank');
-        onClose();
+        // Fallback for browser tests
+        const botUrl = "https://t.me/movebd_bot";
+        window.location.href = botUrl;
       }
 
     } catch (e: any) {
       console.error("Bot delivery catch block error:", e);
-      alert(`Oops! ${e.message}\n\nTechnical Details: Check the console logs if you are the developer.`);
+      alert(`Error: ${e.message}\n\nPlease make sure you have started @movebd_bot.`);
     } finally {
       setSendingMessage(false);
     }

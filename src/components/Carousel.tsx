@@ -17,17 +17,17 @@ export default function Carousel({ movies, theme, t }: { movies: Movie[], theme?
 
   return (
     <div className="relative w-full mt-2">
-      <div className="relative h-44 w-full overflow-hidden px-4">
+      <div className="relative h-44 w-full overflow-hidden">
         <motion.div 
-          animate={{ x: `-${index * 85}%` }}
-          transition={{ type: "spring", damping: 20, stiffness: 100 }}
-          className="flex gap-4 h-full"
+          animate={{ x: `-${index * 88}%` }}
+          transition={{ type: "spring", damping: 25, stiffness: 120 }}
+          className="flex gap-3 h-full px-4"
         >
           {movies.map((movie, i) => (
             <motion.div
               key={movie.id}
-              className={`relative h-full min-w-[85%] overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-black/5 transition-colors duration-300 ${theme === 'dark' ? 'shadow-black/50' : 'shadow-slate-200'}`}
-              whileTap={{ scale: 0.98 }}
+              className={`relative h-full min-w-[85%] overflow-hidden rounded-[24px] shadow-lg ring-1 ring-black/5 transition-all duration-300 ${theme === 'dark' ? 'shadow-black/50' : 'shadow-slate-200'} ${i === index ? 'scale-100' : 'scale-[0.98] opacity-90'}`}
+              whileTap={{ scale: 0.96 }}
             >
               <img
                 src={movie.thumbnail}
@@ -35,12 +35,12 @@ export default function Carousel({ movies, theme, t }: { movies: Movie[], theme?
                 className="h-full w-full object-cover"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
               
-              <div className="absolute bottom-4 left-4">
-                 <h2 className="text-sm font-black text-white mb-1 line-clamp-1">{movie.title}</h2>
-                 <div className="flex gap-2">
-                   <span className="text-[9px] font-black text-white px-2 py-1 bg-orange-600 rounded-lg uppercase">
+              <div className="absolute bottom-4 left-4 right-4">
+                 <h2 className="text-[13px] font-black text-white mb-1.5 line-clamp-1 drop-shadow-md">{movie.title}</h2>
+                 <div className="flex">
+                   <span className="text-[9px] font-black text-white px-2.5 py-1 bg-[#ff4d00] rounded-lg uppercase tracking-wider shadow-lg shadow-orange-900/20">
                      {t.comingSoon}
                    </span>
                  </div>
@@ -50,14 +50,17 @@ export default function Carousel({ movies, theme, t }: { movies: Movie[], theme?
         </motion.div>
       </div>
 
-      {/* Pagination Dots like screenshot */}
-      <div className="mt-3 flex justify-center gap-1.5">
+      {/* Custom Pagination as per screenshot */}
+      <div className="mt-3 flex justify-center items-center gap-1.5">
         {movies.map((_, i) => (
-          <div
+          <motion.div
             key={i}
-            className={`h-1.5 rounded-full transition-all duration-500 ${
-              i === index ? "w-6 bg-orange-600" : "w-1.5 bg-zinc-300"
-            }`}
+            initial={false}
+            animate={{ 
+              width: i === index ? 24 : 6,
+              backgroundColor: i === index ? "#ff4d00" : "#d1d5db"
+            }}
+            className="h-1.5 rounded-full transition-all duration-300"
           />
         ))}
       </div>

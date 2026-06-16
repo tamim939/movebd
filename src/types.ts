@@ -25,6 +25,14 @@ export interface UserProfile {
   role: 'user' | 'admin';
 }
 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: any;
+    };
+  }
+}
+
 export type Category = string;
 
 export const DEFAULT_CATEGORIES: Category[] = ['All', 'Movie', 'CID', 'Bachelor Point', 'Series', 'Others'];

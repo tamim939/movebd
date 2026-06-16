@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
 
 interface SplashProps {
@@ -5,6 +6,12 @@ interface SplashProps {
 }
 
 export default function Splash({ onFinish }: SplashProps) {
+  useEffect(() => {
+    // Safety exit in case motion events don't fire
+    const timer = setTimeout(onFinish, 5000); 
+    return () => clearTimeout(timer);
+  }, [onFinish]);
+
   return (
     <motion.div
       initial={{ opacity: 1 }}
