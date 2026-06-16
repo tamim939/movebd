@@ -28,11 +28,10 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
   }, [step, timeLeft]);
 
   const handleReturnToBot = () => {
-    // Redirect to specified link or fallback to default bot link
-    const targetLink = movie.botLink || "https://t.me/movebd_bot";
+    // Priority: First target download link -> Bot Link -> Fallback
+    const targetLink = movie.downloadLinks?.[0]?.url || movie.botLink || "https://t.me/movebd_bot";
     
     if (window.Telegram?.WebApp) {
-      // If it's a Telegram link and we are in WebApp, we might want to use openTelegramLink or just location
       if (targetLink.includes('t.me')) {
         window.Telegram.WebApp.openTelegramLink(targetLink);
       } else {
@@ -40,7 +39,7 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
       }
       setTimeout(() => window.Telegram.WebApp.close(), 1000);
     } else {
-      window.location.href = targetLink;
+      window.open(targetLink, '_blank');
     }
   };
 

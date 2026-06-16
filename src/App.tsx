@@ -60,8 +60,15 @@ export default function App() {
   useEffect(() => {
     // Monitor categories
     const unsubscribeCategories = onSnapshot(doc(db, "settings", "categories"), (docSnap) => {
+      const forbiddenCategories = ['18+', 'Sax', 'Adult', 'Sex', '18+ Movie', '18+ Series'];
       if (docSnap.exists()) {
-        setCategories(docSnap.data().list || []);
+        const list = docSnap.data().list || [];
+        // Filter out categories that start with forbidden keywords or contain them
+        const filteredList = list.filter((c: string) => 
+          !forbiddenCategories.some(f => c.toLowerCase().includes(f.toLowerCase())) &&
+          !c.includes('🔞') && !c.includes('🔞 Sax')
+        );
+        setCategories(filteredList);
       } else {
         // Initialize once maybe? We'll handle this in AdminPanel or here
         setCategories(['All', 'Movie', 'CID', 'Bachelor Point', 'Series', 'Others']);

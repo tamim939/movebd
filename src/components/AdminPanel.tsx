@@ -26,7 +26,6 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
     category: categories.find(c => c !== 'All') || 'Movie',
     isPremium: false,
     adLink: '',
-    botLink: '',
     downloadLinks: [{ label: 'Download Server 1', url: '' }]
   });
 
@@ -304,19 +303,6 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Success/Download URL (For Button)</label>
-                <div className="relative">
-                  <Bot className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                  <input 
-                    type="text" 
-                    placeholder="https://t.me/movebd_bot?start=... or Download URL"
-                    className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
-                    value={newMovie.botLink || ''}
-                    onChange={e => setNewMovie({...newMovie, botLink: e.target.value})}
-                  />
-                </div>
-              </div>
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-zinc-800/50 border border-white/5">
                 <input 
                   type="checkbox" 
@@ -332,7 +318,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <label className="block text-[10px] font-black text-zinc-500 uppercase ml-1">Target Download Links</label>
+              <label className="block text-[10px] font-black text-zinc-500 uppercase ml-1">Target Download Link (Use This for Button After 10s Timer)</label>
               <button 
                 onClick={addDownloadLink}
                 className="text-[10px] font-black text-red-500 flex items-center gap-1 hover:text-red-400"
