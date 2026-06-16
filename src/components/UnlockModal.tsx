@@ -110,33 +110,20 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
                 {t.success}
              </h2>
 
-             <div className="mb-6 space-y-4">
-                <div className="space-y-2 mt-4 text-left">
-                  {movie.downloadLinks.map((link, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => window.open(link.url, '_blank')}
-                      className={`flex w-full items-center justify-between rounded-xl px-4 py-3 border transition-all active:scale-95 ${theme === 'dark' ? 'bg-zinc-900 border-white/5' : 'bg-slate-50 border-slate-100'}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Download className="h-4 w-4 text-red-500" />
-                        <span className={`text-[10px] font-black uppercase ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{link.label}</span>
-                      </div>
-                      <ExternalLink className="h-3 w-3 text-zinc-500" />
-                    </button>
-                  ))}
-                </div>
-
-                <p className={`text-[10px] font-medium leading-relaxed px-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
-                   {t.returnMsg} 🎬
+             <div className="mb-8 p-6 rounded-3xl bg-zinc-800/10 border border-white/5">
+                <p className={`text-sm font-medium leading-relaxed ${theme === 'dark' ? 'text-zinc-400' : 'text-slate-500'}`}>
+                   {t.returnMsg}
                 </p>
              </div>
 
              <button 
                onClick={handleReturnToBot}
-               className="group flex w-full items-center justify-center gap-3 rounded-[24px] bg-[#00c853] py-4 text-sm font-black text-white shadow-xl shadow-green-500/30 active:scale-95 transition-all hover:bg-[#00e676]"
+               className="group flex w-full items-center justify-center gap-3 rounded-[24px] bg-[#00c853] py-5 text-sm font-black text-white shadow-xl shadow-green-500/30 active:scale-95 transition-all hover:bg-[#00e676]"
              >
-                <span className="text-xl">🤖</span> {t.returnToBot}
+                <div className="flex items-center gap-3">
+                  <Bot className="h-5 w-5" />
+                  <span>{t.returnToBot}</span>
+                </div>
              </button>
           </motion.div>
         ) : (

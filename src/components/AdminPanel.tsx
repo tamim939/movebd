@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2, Edit2, Link, Play, Save, X, PlusCircle, Bot } from 'lucide-react';
+import { Plus, Trash2, Edit2, Link as LucideLink, Play, Save, X, PlusCircle, Bot } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Movie, Category, DownloadLink } from '../types';
 import { db } from '../lib/firebase';
@@ -291,7 +291,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
               <div>
                 <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Redirect/Ad Link (10s Timer)</label>
                 <div className="relative">
-                  <Link className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <LucideLink className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input 
                     type="text" 
                     placeholder="https://tvprobd.vercel.app"
@@ -302,12 +302,12 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Success Button Link (Return to Bot Link)</label>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Success/Download URL (For Button)</label>
                 <div className="relative">
                   <Bot className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input 
                     type="text" 
-                    placeholder="https://t.me/movebd_bot?start=..."
+                    placeholder="https://t.me/movebd_bot?start=... or Download URL"
                     className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
                     value={newMovie.botLink || ''}
                     onChange={e => setNewMovie({...newMovie, botLink: e.target.value})}
@@ -393,7 +393,8 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                 <h3 className="line-clamp-1 font-bold text-white text-sm">{movie.title}</h3>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[10px] text-zinc-500 font-black uppercase px-2 py-0.5 rounded-lg bg-zinc-800">{movie.category}</span>
-                  <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[100px]">{movie.adLink}</span>
+                  <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[80px]">{movie.adLink}</span>
+                  {movie.botLink && <span className="text-[10px] text-green-500 font-medium truncate max-w-[80px]">Link: {movie.botLink}</span>}
                 </div>
               </div>
               <div className="flex gap-2 pr-2">
