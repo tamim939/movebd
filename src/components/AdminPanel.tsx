@@ -11,6 +11,7 @@ import {
   doc, 
   query, 
   orderBy,
+  updateDoc,
   serverTimestamp 
 } from 'firebase/firestore';
 
@@ -18,6 +19,7 @@ export default function AdminPanel() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newMovie, setNewMovie] = useState<Partial<Movie>>({
     category: 'Movie',
     isPremium: false,
@@ -49,11 +51,19 @@ export default function AdminPanel() {
   const handleAdd = async () => {
     if (newMovie.title && newMovie.thumbnail && newMovie.adLink) {
       try {
-        await addDoc(collection(db, "movies"), {
-          ...newMovie,
-          createdAt: serverTimestamp()
-        });
+        if (editingId) {
+          await updateDoc(doc(db, "movies", editingId), {
+            ...newMovie,
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          await addDoc(collection(db, "movies"), {
+            ...newMovie,
+            createdAt: serverTimestamp()
+          });
+        }
         setIsAdding(false);
+        setEditingId(null);
         setNewMovie({ 
           category: 'Movie', 
           isPremium: false, 
@@ -62,9 +72,23 @@ export default function AdminPanel() {
         });
         fetchMovies();
       } catch (e) {
-        console.error("Error adding movie:", e);
+        console.error("Error saving movie:", e);
       }
     }
+  };
+
+  const handleEdit = (movie: Movie) => {
+    setNewMovie({
+      title: movie.title,
+      thumbnail: movie.thumbnail,
+      description: movie.description,
+      category: movie.category,
+      adLink: movie.adLink,
+      isPremium: movie.isPremium,
+      downloadLinks: movie.downloadLinks || [{ label: 'Download Server 1', url: '' }]
+    });
+    setEditingId(movie.id);
+    setIsAdding(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -105,7 +129,18 @@ export default function AdminPanel() {
           <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Manage Content & Links</p>
         </div>
         <button 
-          onClick={() => setIsAdding(!isAdding)}
+          onClick={() => {
+            if (isAdding) {
+              setEditingId(null);
+              setNewMovie({ 
+                category: 'Movie', 
+                isPremium: false, 
+                adLink: '', 
+                downloadLinks: [{ label: 'Download Server 1', url: '' }] 
+              });
+            }
+            setIsAdding(!isAdding);
+          }}
           className="flex items-center gap-2 rounded-2xl bg-red-600 px-6 py-3 text-sm font-black shadow-xl shadow-red-900/40 active:scale-95 transition-all"
         >
           {isAdding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -231,7 +266,7 @@ export default function AdminPanel() {
             onClick={handleAdd}
             className="w-full rounded-2xl bg-red-600 py-4 text-sm font-black shadow-2xl shadow-red-900/40 hover:bg-red-500 transition-all active:scale-[0.98]"
           >
-            PUBLISH CONTENT
+            {editingId ? 'UPDATE CONTENT' : 'PUBLISH CONTENT'}
           </button>
         </div>
       )}
@@ -257,6 +292,12 @@ export default function AdminPanel() {
                 </div>
               </div>
               <div className="flex gap-2 pr-2">
+                <button 
+                  onClick={() => handleEdit(movie)}
+                  className="rounded-xl bg-zinc-800 p-3 text-white hover:bg-white hover:text-black transition-all"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
                 <button 
                   onClick={() => handleDelete(movie.id)}
                   className="rounded-xl bg-red-600/10 p-3 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-sm"

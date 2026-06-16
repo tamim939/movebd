@@ -27,7 +27,9 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return localStorage.getItem('is_admin_active') === 'true';
+  });
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   
@@ -91,8 +93,11 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setIsAdmin(true);
+        localStorage.setItem('is_admin_active', 'true');
       } else {
+        // Only clear if firebase auth confirms no user
         setIsAdmin(false);
+        localStorage.removeItem('is_admin_active');
       }
     });
 
@@ -112,6 +117,7 @@ export default function App() {
 
   const handleAdminSuccess = () => {
     setIsAdmin(true);
+    localStorage.setItem('is_admin_active', 'true');
     setShowAdminLogin(false);
     setActiveTab('search'); // Go to admin panel
   };
@@ -119,6 +125,7 @@ export default function App() {
   const handleLogout = async () => {
     await signOut(auth);
     setIsAdmin(false);
+    localStorage.removeItem('is_admin_active');
     setActiveTab('home');
   };
 
