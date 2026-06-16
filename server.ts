@@ -16,28 +16,36 @@ async function startServer() {
     const { chat_id, title, links } = req.body;
 
     if (!chat_id || !links) {
+      console.warn("send-vbox: Missing chat_id or links", { chat_id, title });
       return res.status(400).json({ error: "Missing chat_id or links" });
     }
 
-    const linksText = links.map((l: any) => `🎬 ${l.label}: ${l.url}`).join("\n\n");
-    const message = `✅ *Successful!*\n\nYour video *${title}* has been unlocked.\n\n${linksText}\n\nEnjoy watching!`;
+    const linksText = links.map((l: any) => `<b>🎬 ${l.label}:</b> ${l.url}`).join("\n\n");
+    const message = `<b>✅ Successful!</b>\n\nYour video <b>${title}</b> has been unlocked.\n\n${linksText}\n\nEnjoy watching!`;
 
     try {
+      console.log(`Sending message to Telegram bot... chat_id: ${chat_id}`);
       const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id,
+          chat_id: Number(chat_id),
           text: message,
-          parse_mode: "Markdown",
+          parse_mode: "HTML",
         }),
       });
 
       const data = await response.json();
+      console.log("Telegram API Response:", data);
+
+      if (!data.ok) {
+        throw new Error(data.description || "Telegram API error");
+      }
+
       res.json(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending TG message:", error);
-      res.status(500).json({ error: "Failed to send message" });
+      res.status(500).json({ error: error.message || "Failed to send message" });
     }
   });
 

@@ -30,13 +30,13 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
 
   const handleReturnToBot = async () => {
     if (!user?.id) {
-       onClose();
+       alert("Telegram User ID not found. Please open this app inside Telegram.");
        return;
     }
 
     setSendingMessage(true);
     try {
-      await fetch('/api/send-vbox', {
+      const response = await fetch('/api/send-vbox', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -45,15 +45,22 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
           links: movie.downloadLinks
         })
       });
-      // Telegram WebApp close
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send");
+      }
+
+      // Telegram WebApp close only if send was successful
       if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.close();
       } else {
         onClose();
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error sending to bot:", e);
-      onClose();
+      alert(`Error: ${e.message}. Make sure you have started the bot @movebd_bot first.`);
     } finally {
       setSendingMessage(false);
     }
@@ -93,7 +100,6 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
                   className="h-full w-full border-none"
                   title="Sponsored Content"
                 />
-                {/* Overlay to prevent early exit if user tries to click out of the board */}
              </div>
 
              <div className="p-4 bg-zinc-900 border-t border-white/5 text-center">
@@ -107,36 +113,47 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
             key="success"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className={`relative w-full max-w-sm rounded-[44px] p-10 text-center shadow-3xl transition-colors duration-500 ${theme === 'dark' ? 'bg-zinc-950 border border-white/5 shadow-black' : 'bg-white shadow-2xl shadow-slate-200'}`}
+            className={`relative w-full max-w-sm rounded-[44px] p-10 text-center shadow-3xl transition-colors duration-500 overflow-y-auto no-scrollbar max-h-[90vh] ${theme === 'dark' ? 'bg-zinc-950 border border-white/5 shadow-black' : 'bg-white shadow-2xl shadow-slate-200'}`}
           >
-             <div className="mb-8 flex justify-center">
+             <div className="mb-6 flex justify-center">
                 <div className="relative">
                    <motion.div 
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', damping: 10, stiffness: 100 }}
-                      className="flex h-24 w-24 items-center justify-center rounded-full bg-green-500/10"
+                      className="flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10"
                    >
-                      <CheckCircle2 className="h-16 w-16 text-green-500" />
+                      <CheckCircle2 className="h-12 w-12 text-green-500" />
                    </motion.div>
-                   <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                      className="absolute -inset-4 rounded-full border-2 border-green-500/20"
-                   />
                 </div>
              </div>
 
-             <h2 className={`text-3xl font-black uppercase tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+             <h2 className={`text-2xl font-black uppercase tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
                 {t.success}
              </h2>
 
-             <div className="mb-8 space-y-4">
+             <div className="mb-6 space-y-4">
                 <div className={`flex items-center gap-2 rounded-2xl p-4 transition-colors ${theme === 'dark' ? 'bg-green-500/5' : 'bg-green-50'}`}>
-                   <span className="text-sm font-bold text-green-500">✅ {t.sentToInbox}</span>
+                   <span className="text-xs font-bold text-green-500">✅ {t.sentToInbox}</span>
                 </div>
-                <p className={`text-xs font-medium leading-relaxed px-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
+                
+                <div className="space-y-2 mt-4 text-left">
+                  {movie.downloadLinks.map((link, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => window.open(link.url, '_blank')}
+                      className={`flex w-full items-center justify-between rounded-xl px-4 py-3 border transition-all active:scale-95 ${theme === 'dark' ? 'bg-zinc-900 border-white/5' : 'bg-slate-50 border-slate-100'}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Download className="h-4 w-4 text-red-500" />
+                        <span className={`text-[10px] font-black uppercase ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{link.label}</span>
+                      </div>
+                      <ExternalLink className="h-3 w-3 text-zinc-500" />
+                    </button>
+                  ))}
+                </div>
+
+                <p className={`text-[10px] font-medium leading-relaxed px-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
                    {t.returnMsg} 🎬
                 </p>
              </div>
@@ -144,7 +161,7 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
              <button 
                onClick={handleReturnToBot}
                disabled={sendingMessage}
-               className="group flex w-full items-center justify-center gap-3 rounded-[24px] bg-[#00c853] py-5 text-sm font-black text-white shadow-xl shadow-green-500/30 active:scale-95 transition-all hover:bg-[#00e676]"
+               className="group flex w-full items-center justify-center gap-3 rounded-[24px] bg-[#00c853] py-4 text-sm font-black text-white shadow-xl shadow-green-500/30 active:scale-95 transition-all hover:bg-[#00e676]"
              >
                 {sendingMessage ? (
                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -216,4 +233,3 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
     </motion.div>
   );
 }
-
