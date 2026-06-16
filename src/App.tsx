@@ -18,7 +18,7 @@ import MovieCard from './components/MovieCard';
 import UnlockModal from './components/UnlockModal';
 import { Movie } from './types';
 import { db } from './lib/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc } from 'firebase/firestore';
 import { translations, Language } from './translations';
 
 export default function App() {

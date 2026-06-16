@@ -12,7 +12,8 @@ import {
   Info, 
   ChevronRight, 
   Home,
-  LogOut
+  LogOut,
+  ShieldCheck
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { UserProfile } from '../types';
@@ -260,8 +261,6 @@ export default function ProfileView({
     </div>
   );
 }
-
-import { ShieldCheck } from 'lucide-react';
 
 function LinkButton({ icon, label, subLabel, color, fullWidth }: { icon: any, label: string, subLabel: string, color: string, fullWidth?: boolean }) {
   return (
