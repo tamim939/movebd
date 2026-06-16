@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "Movie": {
+      "title": "Movie",
+      "description": "Represents a movie or show entry with its link and category.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "The title of the movie/show" },
+        "description": { "type": "string", "description": "Short description of the content" },
+        "thumbnail": { "type": "string", "description": "URL to the cover image" },
+        "link": { "type": "string", "description": "The telegram or external link to the content" },
+        "category": { "type": "string", "description": "Category like Movie, CID, Bachelor Point, etc." },
+        "isPremium": { "type": "boolean", "description": "Whether this content requires a subscription" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "link", "category", "thumbnail"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Stores telegram user data and subscription status.",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "firstName": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "isSubscribed": { "type": "boolean" },
+        "subscriptionExpiresAt": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      }
+    }
+  },
+  "firestore": {
+    "/movies/{movieId}": {
+      "schema": "Movie",
+      "description": "Collection of all movies and shows."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles synced from Telegram."
+    },
+    "/admins/{adminId}": {
+      "schema": "object",
+      "description": "Internal list of admin UIDs."
+    }
+  }
+}
