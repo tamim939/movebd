@@ -25,6 +25,6 @@ export interface UserProfile {
   role: 'user' | 'admin';
 }
 
-export type Category = 'All' | 'Movie' | 'CID' | 'Bachelor Point' | 'Series' | 'Others';
+export type Category = string;
 
-export const CATEGORIES: Category[] = ['All', 'Movie', 'CID', 'Bachelor Point', 'Series', 'Others'];
+export const DEFAULT_CATEGORIES: Category[] = ['All', 'Movie', 'CID', 'Bachelor Point', 'Series', 'Others'];

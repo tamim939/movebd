@@ -40,6 +40,7 @@ export default function App() {
   const [lang, setLang] = useState<Language>(() => {
     return (localStorage.getItem('app_lang') as Language) || 'en';
   });
+  const [categories, setCategories] = useState<string[]>([]);
 
   const t = translations[lang];
 
@@ -55,6 +56,20 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('app_lang', lang);
   }, [lang]);
+
+  useEffect(() => {
+    // Monitor categories
+    const unsubscribeCategories = onSnapshot(doc(db, "settings", "categories"), (docSnap) => {
+      if (docSnap.exists()) {
+        setCategories(docSnap.data().list || []);
+      } else {
+        // Initialize once maybe? We'll handle this in AdminPanel or here
+        setCategories(['All', 'Movie', 'CID', 'Bachelor Point', 'Series', 'Others']);
+      }
+    });
+
+    return () => unsubscribeCategories();
+  }, []);
 
   useEffect(() => {
     // Monitor Movies from Firestore
@@ -162,10 +177,11 @@ export default function App() {
                   onMovieClick={setSelectedMovie}
                   t={t}
                   theme={theme}
+                  categories={categories}
                 />
               )}
               {activeTab === 'search' && (
-                isAdmin ? <AdminPanel /> : (
+                isAdmin ? <AdminPanel categories={categories} /> : (
                   <div className={`flex h-[80vh] flex-col items-center justify-center gap-4 text-center px-6 transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950' : 'bg-white'}`}>
                     <div className={`rounded-full p-8 shadow-inner ${theme === 'dark' ? 'bg-zinc-900 shadow-white/5' : 'bg-slate-50 shadow-black/5'}`}>
                       <motion.div

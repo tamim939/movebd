@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Trash2, Edit2, Link, Play, Save, X, PlusCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Movie, Category, CATEGORIES, DownloadLink } from '../types';
+import { Movie, Category, DownloadLink } from '../types';
 import { db } from '../lib/firebase';
 import { 
   collection, 
@@ -15,13 +15,15 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 
-export default function AdminPanel() {
+export default function AdminPanel({ categories }: { categories: string[] }) {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [isManagingCategories, setIsManagingCategories] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newMovie, setNewMovie] = useState<Partial<Movie>>({
-    category: 'Movie',
+    category: categories.find(c => c !== 'All') || 'Movie',
     isPremium: false,
     adLink: '',
     downloadLinks: [{ label: 'Download Server 1', url: '' }]
@@ -47,6 +49,44 @@ export default function AdminPanel() {
   useEffect(() => {
     fetchMovies();
   }, []);
+
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+    if (categories.includes(newCategory.trim())) {
+      alert("Category already exists");
+      return;
+    }
+
+    try {
+      const newList = [...categories, newCategory.trim()];
+      await updateDoc(doc(db, "settings", "categories"), {
+        list: newList
+      }).catch(async (err) => {
+        // If doc doesn't exist, set it
+        if (err.code === 'not-found') {
+          const { setDoc } = await import('firebase/firestore');
+          await setDoc(doc(db, "settings", "categories"), { list: newList });
+        }
+      });
+      setNewCategory('');
+    } catch (e) {
+      console.error("Error adding category:", e);
+    }
+  };
+
+  const handleDeleteCategory = async (cat: string) => {
+    if (cat === 'All') return;
+    if (!window.confirm(`Delete category "${cat}"? Movies in this category won't be deleted but will be uncategorized.`)) return;
+
+    try {
+      const newList = categories.filter(c => c !== cat);
+      await updateDoc(doc(db, "settings", "categories"), {
+        list: newList
+      });
+    } catch (e) {
+      console.error("Error deleting category:", e);
+    }
+  };
 
   const handleAdd = async () => {
     if (newMovie.title && newMovie.thumbnail && newMovie.adLink) {
@@ -128,25 +168,73 @@ export default function AdminPanel() {
           <h2 className="text-3xl font-black italic tracking-tighter">ADMIN <span className="text-red-600">DASHBOARD</span></h2>
           <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Manage Content & Links</p>
         </div>
-        <button 
-          onClick={() => {
-            if (isAdding) {
-              setEditingId(null);
-              setNewMovie({ 
-                category: 'Movie', 
-                isPremium: false, 
-                adLink: '', 
-                downloadLinks: [{ label: 'Download Server 1', url: '' }] 
-              });
-            }
-            setIsAdding(!isAdding);
-          }}
-          className="flex items-center gap-2 rounded-2xl bg-red-600 px-6 py-3 text-sm font-black shadow-xl shadow-red-900/40 active:scale-95 transition-all"
-        >
-          {isAdding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {isAdding ? 'CANCEL' : 'ADD CONTENT'}
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setIsManagingCategories(!isManagingCategories)}
+            className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-black shadow-xl active:scale-95 transition-all ${isManagingCategories ? 'bg-zinc-800 text-white' : 'bg-red-600/10 text-red-500'}`}
+          >
+            {isManagingCategories ? <X className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
+            {isManagingCategories ? 'CLOSE' : 'CATEGORIES'}
+          </button>
+          <button 
+            onClick={() => {
+              if (isAdding) {
+                setEditingId(null);
+                setNewMovie({ 
+                  category: categories.find(c => c !== 'All') || 'Movie', 
+                  isPremium: false, 
+                  adLink: '', 
+                  downloadLinks: [{ label: 'Download Server 1', url: '' }] 
+                });
+              }
+              setIsAdding(!isAdding);
+              setIsManagingCategories(false);
+            }}
+            className="flex items-center gap-2 rounded-2xl bg-red-600 px-6 py-3 text-sm font-black shadow-xl shadow-red-900/40 active:scale-95 transition-all"
+          >
+            {isAdding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {isAdding ? 'CANCEL' : 'ADD CONTENT'}
+          </button>
+        </div>
       </div>
+
+      {isManagingCategories && (
+        <div className="mb-8 space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
+           <h3 className="text-sm font-black text-red-600 uppercase tracking-widest">Manage Categories</h3>
+           
+           <div className="flex gap-2">
+             <input 
+               type="text" 
+               placeholder="New Category Name..."
+               className="flex-1 rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-red-600"
+               value={newCategory}
+               onChange={e => setNewCategory(e.target.value)}
+             />
+             <button 
+               onClick={handleAddCategory}
+               className="rounded-xl bg-red-600 px-6 py-3 text-xs font-black uppercase"
+             >
+               Add
+             </button>
+           </div>
+
+           <div className="flex flex-wrap gap-2 mt-4">
+             {categories.map(cat => (
+               <div key={cat} className="flex items-center gap-2 rounded-full bg-zinc-800 px-4 py-2 border border-white/5 group">
+                 <span className="text-[10px] font-black uppercase text-zinc-400">{cat}</span>
+                 {cat !== 'All' && (
+                   <button 
+                     onClick={() => handleDeleteCategory(cat)}
+                     className="text-zinc-600 hover:text-red-500 transition-colors"
+                   >
+                     <X className="h-3 w-3" />
+                   </button>
+                 )}
+               </div>
+             ))}
+           </div>
+        </div>
+      )}
 
       {isAdding && (
         <div className="mb-8 space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
@@ -189,9 +277,9 @@ export default function AdminPanel() {
                 <select 
                   className="w-full rounded-2xl bg-zinc-800 px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
                   value={newMovie.category}
-                  onChange={e => setNewMovie({...newMovie, category: e.target.value as Category})}
+                  onChange={e => setNewMovie({...newMovie, category: e.target.value})}
                 >
-                  {CATEGORIES.filter(c => c !== 'All').map(c => (
+                  {categories.filter(c => c !== 'All').map(c => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>

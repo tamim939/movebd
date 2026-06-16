@@ -1,15 +1,16 @@
-import { CATEGORIES, Category } from '../types';
+import { Category } from '../types';
 
 interface CategoryBarProps {
+  categories: Category[];
   activeCategory: Category;
   onSelect: (category: Category) => void;
   theme?: string;
 }
 
-export default function CategoryBar({ activeCategory, onSelect, theme }: CategoryBarProps) {
+export default function CategoryBar({ categories, activeCategory, onSelect, theme }: CategoryBarProps) {
   return (
     <div className="flex gap-2 overflow-x-auto px-4 py-4 no-scrollbar">
-      {CATEGORIES.map((category) => (
+      {categories.map((category) => (
         <button
           key={category}
           onClick={() => onSelect(category)}

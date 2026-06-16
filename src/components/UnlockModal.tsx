@@ -29,7 +29,10 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
   }, [step, timeLeft]);
 
   const handleReturnToBot = async () => {
-    if (!user?.id) {
+    // Fallback to user provided test ID if not in Telegram environment
+    const chatId = user?.id || "7228630025"; 
+    
+    if (!chatId) {
        alert("Telegram User ID not found. Please open this app inside Telegram.");
        return;
     }
@@ -40,27 +43,39 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: user.id,
+          chat_id: chatId,
           title: movie.title,
           links: movie.downloadLinks
         })
       });
       
-      const result = await response.json();
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        throw new Error(`Server returned non-JSON response: ${text.substring(0, 50)}...`);
+      }
       
-      if (!response.ok) {
+      if (!response.ok || !result.ok) {
         throw new Error(result.error || "Failed to send");
       }
 
-      // Telegram WebApp close only if send was successful
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.close();
-      } else {
-        onClose();
-      }
+      // If we are here, message was sent successfully
+      // Now redirect to Bot
+      setTimeout(() => {
+        if (window.Telegram?.WebApp) {
+          window.Telegram.WebApp.close();
+        } else {
+          // Open the bot in a new tab if not in WebApp
+          window.open('https://t.me/movebd_bot', '_blank');
+          onClose();
+        }
+      }, 500);
+
     } catch (e: any) {
       console.error("Error sending to bot:", e);
-      alert(`Error: ${e.message}. Make sure you have started the bot @movebd_bot first.`);
+      alert(`Error: ${e.message}\n\nMake sure you have started @movebd_bot first.`);
     } finally {
       setSendingMessage(false);
     }

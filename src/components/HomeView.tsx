@@ -9,8 +9,8 @@ import { db } from '../lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { AnimatePresence } from 'motion/react';
 
-export default function HomeView({ user, movies, loading, favorites, onToggleFavorite, onMovieClick, t, theme }: { user: any, movies: Movie[], loading: boolean, favorites: string[], onToggleFavorite: (id: string) => void, onMovieClick: (movie: Movie) => void, t: any, theme: string }) {
-  const [activeCategory, setActiveCategory] = useState<Category>('All');
+export default function HomeView({ user, movies, loading, favorites, onToggleFavorite, onMovieClick, t, theme, categories }: { user: any, movies: Movie[], loading: boolean, favorites: string[], onToggleFavorite: (id: string) => void, onMovieClick: (movie: Movie) => void, t: any, theme: string, categories: string[] }) {
+  const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const filteredMovies = activeCategory === 'All' 
     ? movies 
@@ -48,7 +48,7 @@ export default function HomeView({ user, movies, loading, favorites, onToggleFav
       </header>
 
       {/* Categories */}
-      <CategoryBar activeCategory={activeCategory} onSelect={setActiveCategory} theme={theme} />
+      <CategoryBar categories={categories} activeCategory={activeCategory} onSelect={setActiveCategory} theme={theme} />
 
       {/* Banner */}
       <div className="px-4">

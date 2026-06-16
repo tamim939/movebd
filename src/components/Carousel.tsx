@@ -13,12 +13,12 @@ export default function Carousel({ movies, theme, t }: { movies: Movie[], theme?
     return () => clearInterval(timer);
   }, [movies.length]);
 
-  if (movies.length === 0) return <div className={`h-48 w-full rounded-3xl flex items-center justify-center text-xs font-bold uppercase tracking-widest ${theme === 'dark' ? 'bg-zinc-900 text-zinc-700' : 'bg-slate-100 text-slate-400'}`}>No Featured Content</div>;
+  if (movies.length === 0) return <div className={`h-40 w-full rounded-3xl flex items-center justify-center text-xs font-bold uppercase tracking-widest ${theme === 'dark' ? 'bg-zinc-900 text-zinc-700' : 'bg-slate-100 text-slate-400'}`}>No Featured Content</div>;
 
   const currentMovie = movies[index];
 
   return (
-    <div className={`relative h-52 w-full overflow-hidden rounded-[32px] mt-2 shadow-2xl transition-colors duration-300 ring-1 ring-black/5 ${theme === 'dark' ? 'shadow-black/50' : 'shadow-slate-200'}`}>
+    <div className={`relative h-44 w-full overflow-hidden rounded-[32px] mt-2 shadow-2xl transition-colors duration-300 ring-1 ring-black/5 ${theme === 'dark' ? 'shadow-black/50' : 'shadow-slate-200'}`}>
       <AnimatePresence mode="wait">
         <motion.div
           key={index}

@@ -13,39 +13,55 @@ async function startServer() {
 
   // API to send message to user via Bot
   app.post("/api/send-vbox", async (req, res) => {
-    const { chat_id, title, links } = req.body;
-
-    if (!chat_id || !links) {
-      console.warn("send-vbox: Missing chat_id or links", { chat_id, title });
-      return res.status(400).json({ error: "Missing chat_id or links" });
-    }
-
-    const linksText = links.map((l: any) => `<b>🎬 ${l.label}:</b> ${l.url}`).join("\n\n");
-    const message = `<b>✅ Successful!</b>\n\nYour video <b>${title}</b> has been unlocked.\n\n${linksText}\n\nEnjoy watching!`;
-
     try {
-      console.log(`Sending message to Telegram bot... chat_id: ${chat_id}`);
-      const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      const { chat_id, title, links } = req.body;
+
+      console.log("-----------------------------------------");
+      console.log("API: /api/send-vbox called");
+      console.log("Payload:", { chat_id, title, linksCount: links?.length });
+
+      if (!chat_id || !links) {
+        console.warn("send-vbox: Missing chat_id or links");
+        return res.status(400).json({ 
+          ok: false, 
+          error: "Missing chat_id or links. Please ensure you are viewing through the Telegram Bot." 
+        });
+      }
+
+      const linksText = links.map((l: any) => `<b>🎬 ${l.label}:</b> ${l.url}`).join("\n\n");
+      const message = `<b>✅ Successful!</b>\n\nYour video <b>${title}</b> has been unlocked.\n\n${linksText}\n\nEnjoy watching!`;
+
+      console.log(`Sending message via TG Bot to chat: ${chat_id}`);
+      
+      const tgResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: Number(chat_id),
+          chat_id: String(chat_id),
           text: message,
           parse_mode: "HTML",
         }),
       });
 
-      const data = await response.json();
-      console.log("Telegram API Response:", data);
+      const data: any = await tgResponse.json();
+      console.log("Telegram response received:", data);
 
-      if (!data.ok) {
-        throw new Error(data.description || "Telegram API error");
+      if (!tgResponse.ok || !data.ok) {
+        console.error("Telegram API reported error:", data);
+        return res.status(tgResponse.status || 500).json({ 
+          ok: false, 
+          error: data.description || "Telegram API error",
+          details: data
+        });
       }
 
-      res.json(data);
+      return res.json({ ok: true, data });
     } catch (error: any) {
-      console.error("Error sending TG message:", error);
-      res.status(500).json({ error: error.message || "Failed to send message" });
+      console.error("CRITICAL error in /api/send-vbox:", error);
+      return res.status(500).json({ 
+        ok: false, 
+        error: error.message || "Internal Server Error" 
+      });
     }
   });
 
