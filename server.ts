@@ -8,6 +8,14 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Log all requests for debugging
+  app.use((req, res, next) => {
+    if (req.url.startsWith('/api')) {
+      console.log(`[API Request] ${req.method} ${req.url}`);
+    }
+    next();
+  });
+
   // Telegram Bot Token (from user request)
   const BOT_TOKEN = "8689967601:AAHNoB6lyfcl1bHr08fLLpDg5oRu-XYFQyw";
 
@@ -63,6 +71,14 @@ async function startServer() {
         error: error.message || "Internal Server Error" 
       });
     }
+  });
+
+  // Catch-all for other /api routes
+  app.all("/api/*", (req, res) => {
+    res.status(404).json({ 
+      ok: false, 
+      error: `API route not found: ${req.method} ${req.url}` 
+    });
   });
 
   // Basic health check API

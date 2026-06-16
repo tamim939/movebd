@@ -39,9 +39,13 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
 
     setSendingMessage(true);
     try {
+      console.log("Sending to bot via API...");
       const response = await fetch('/api/send-vbox', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           chat_id: chatId,
           title: movie.title,
@@ -50,32 +54,33 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
       });
       
       const text = await response.text();
+      console.log("API Raw Response:", text);
+      
       let result;
       try {
         result = JSON.parse(text);
-      } catch (e) {
-        throw new Error(`Server returned non-JSON response: ${text.substring(0, 50)}...`);
+      } catch (err) {
+        throw new Error(`Server returned invalid response. Make sure the app is running correctly.`);
       }
       
       if (!response.ok || !result.ok) {
-        throw new Error(result.error || "Failed to send");
+        throw new Error(result.error || "Failed to deliver message via Bot");
       }
 
-      // If we are here, message was sent successfully
-      // Now redirect to Bot
-      setTimeout(() => {
-        if (window.Telegram?.WebApp) {
-          window.Telegram.WebApp.close();
-        } else {
-          // Open the bot in a new tab if not in WebApp
-          window.open('https://t.me/movebd_bot', '_blank');
-          onClose();
-        }
-      }, 500);
+      // Success
+      console.log("Message delivered successfully");
+      
+      // Redirect to Bot
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.close();
+      } else {
+        window.open('https://t.me/movebd_bot', '_blank');
+        onClose();
+      }
 
     } catch (e: any) {
-      console.error("Error sending to bot:", e);
-      alert(`Error: ${e.message}\n\nMake sure you have started @movebd_bot first.`);
+      console.error("Error in handleReturnToBot:", e);
+      alert(`Oops! ${e.message}\n\nPlease try again or contact support.`);
     } finally {
       setSendingMessage(false);
     }
