@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Trash2, Edit2, Link, Play, Save, X, PlusCircle } from 'lucide-react';
+import { Plus, Trash2, Edit2, Link, Play, Save, X, PlusCircle, Bot } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Movie, Category, DownloadLink } from '../types';
 import { db } from '../lib/firebase';
