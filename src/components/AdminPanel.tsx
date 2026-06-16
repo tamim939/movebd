@@ -1,3 +1,4 @@
+import React from 'react';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
 import { useState } from 'react';
 import { Movie, Category, CATEGORIES } from '../types';

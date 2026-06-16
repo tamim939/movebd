@@ -1,3 +1,4 @@
+import React from 'react';
 import { Bell } from 'lucide-react';
 import { useState } from 'react';
 import CategoryBar from './CategoryBar';
@@ -6,7 +7,7 @@ import MovieCard from './MovieCard';
 import { Category } from '../types';
 import { MOCK_MOVIES } from '../data';
 
-export default function HomeView() {
+export default function HomeView({ user }: { user: any }) {
   const [activeCategory, setActiveCategory] = useState<Category>('All');
 
   const filteredMovies = activeCategory === 'All' 
@@ -14,7 +15,7 @@ export default function HomeView() {
     : MOCK_MOVIES.filter(m => m.category === activeCategory);
 
   return (
-    <div className="pb-32">
+    <div className="pb-32 overflow-y-auto">
       {/* Header */}
       <header className="flex items-center justify-between px-6 pt-6">
         <div className="flex items-center gap-2">
@@ -24,8 +25,14 @@ export default function HomeView() {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 rounded-full bg-zinc-900 px-3 py-1.5 border border-white/5">
-             <div className="h-5 w-5 rounded-full bg-gradient-to-tr from-orange-400 to-red-600" />
-             <span className="text-[10px] font-bold text-white uppercase italic">Trader Tami...</span>
+             {user?.photo_url ? (
+               <img src={user.photo_url} alt="" className="h-5 w-5 rounded-full object-cover" />
+             ) : (
+               <div className="h-5 w-5 rounded-full bg-gradient-to-tr from-orange-400 to-red-600" />
+             )}
+             <span className="text-[10px] font-bold text-white uppercase italic max-w-[80px] truncate">
+               {user?.first_name || 'Trader Tami...'}
+             </span>
           </div>
           <button className="relative rounded-full bg-zinc-900 p-2 border border-white/5">
             <Bell className="h-5 w-5 text-zinc-400" />

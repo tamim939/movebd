@@ -7,15 +7,20 @@ import { useState, useEffect } from 'react';
 import Splash from './components/Splash';
 import HomeView from './components/HomeView';
 import AdminPanel from './components/AdminPanel';
+import ProfileView from './components/ProfileView';
+import AdminLogin from './components/AdminLogin';
 import BottomNav, { TabId } from './components/BottomNav';
 import { getTelegramUser, expandTelegramWebApp } from './lib/telegram';
 import { motion, AnimatePresence } from 'motion/react';
+import { auth } from './lib/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>('home');
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   useEffect(() => {
     // Initialize Telegram
@@ -24,16 +29,33 @@ export default function App() {
     if (tgUser) {
       setUser(tgUser);
       console.log('Telegram User:', tgUser);
-      // Hardcoded admin check for demo or check against a list later
-      // For now, let's treat everyone as admin in preview if no real user data
-      if (!tgUser.id || tgUser.username === 'admin' || tgUser.id === 123456789) { 
-        setIsAdmin(true);
-      }
-    } else {
-      // Preview mode development fallback
-      setIsAdmin(true);
     }
+
+    // Monitor Firebase Auth
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
+
+  const handleAdminSuccess = () => {
+    setIsAdmin(true);
+    setShowAdminLogin(false);
+    setActiveTab('search'); // Go to admin panel
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setIsAdmin(false);
+    setActiveTab('home');
+  };
+
+  const isSpecialUser = user?.username === 'TRADER_TAMIM_3' || !user?.id; // Allow in preview for dev
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white selection:bg-red-600/30">
@@ -47,54 +69,59 @@ export default function App() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="relative mx-auto max-w-md pb-24"
+          className="relative mx-auto max-w-md"
         >
-          {activeTab === 'home' && <HomeView />}
-          {activeTab === 'search' && (
-            isAdmin ? <AdminPanel /> : (
-              <div className="flex h-[80vh] items-center justify-center text-zinc-500">
-                Search coming soon...
-              </div>
-            )
-          )}
-          {activeTab === 'upcoming' && (
-            <div className="flex h-[80vh] items-center justify-center text-zinc-500">
-              Upcoming movies coming soon...
-            </div>
-          )}
-          {activeTab === 'favorite' && (
-            <div className="flex h-[80vh] items-center justify-center text-zinc-500">
-              Your favorites will appear here.
-            </div>
-          )}
-          {activeTab === 'profile' && (
-            <div className="flex h-[80vh] flex-col items-center justify-center gap-4 text-center">
-              {user?.photo_url ? (
-                <img src={user.photo_url} alt="Profile" className="h-24 w-24 rounded-full border-4 border-red-600 shadow-xl shadow-red-900/20" />
-              ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-zinc-900 text-3xl font-bold text-red-500 border-4 border-zinc-800">
-                  {user?.first_name?.charAt(0) || 'U'}
+          {showAdminLogin ? (
+            <AdminLogin 
+              onSuccess={handleAdminSuccess} 
+              onCancel={() => setShowAdminLogin(false)} 
+            />
+          ) : (
+            <>
+              {activeTab === 'home' && <HomeView user={user} />}
+              {activeTab === 'search' && (
+                isAdmin ? <AdminPanel /> : (
+                  <div className="flex h-[80vh] flex-col items-center justify-center gap-4 text-center px-6">
+                    <div className="rounded-full bg-zinc-900 p-6">
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ repeat: Infinity, duration: 2 }}
+                      >
+                         🔍
+                      </motion.div>
+                    </div>
+                    <h2 className="text-xl font-bold">Search coming soon</h2>
+                    <p className="text-sm text-zinc-500">We are working on bringing the best search experience for you.</p>
+                  </div>
+                )
+              )}
+              {activeTab === 'upcoming' && (
+                <div className="flex h-[80vh] items-center justify-center text-zinc-500">
+                  Upcoming movies coming soon...
                 </div>
               )}
-              <div>
-                <h2 className="text-2xl font-bold">{user?.first_name || 'Anonymous'} {user?.last_name || ''}</h2>
-                <p className="text-zinc-500">@{user?.username || 'no_username'}</p>
-              </div>
-              <div className="rounded-2xl bg-zinc-900 px-6 py-4 border border-white/5">
-                <p className="text-xs text-zinc-400">Subscription Status</p>
-                <p className="mt-1 text-lg font-bold text-red-500 uppercase">Not Active</p>
-                <button className="mt-4 rounded-xl bg-gradient-to-r from-red-600 to-red-500 px-8 py-2.5 text-sm font-bold shadow-lg shadow-red-900/20">
-                  Subscribe Now
-                </button>
-              </div>
-            </div>
-          )}
+              {activeTab === 'favorite' && (
+                <div className="flex h-[80vh] items-center justify-center text-zinc-500">
+                  Your favorites will appear here.
+                </div>
+              )}
+              {activeTab === 'profile' && (
+                <ProfileView 
+                  user={user} 
+                  onGoHome={() => setActiveTab('home')}
+                  onLogout={handleLogout}
+                  isAdmin={isAdmin}
+                  onTriggerAdminLogin={isSpecialUser ? () => setShowAdminLogin(true) : undefined}
+                />
+              )}
 
-          <BottomNav 
-            activeTab={activeTab} 
-            setActiveTab={setActiveTab} 
-            userPhoto={user?.photo_url}
-          />
+              <BottomNav 
+                activeTab={activeTab} 
+                setActiveTab={setActiveTab} 
+                userPhoto={user?.photo_url}
+              />
+            </>
+          )}
         </motion.div>
       )}
     </div>
