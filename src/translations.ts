@@ -44,9 +44,8 @@ export const translations = {
     publish: "Publish Content",
     addContent: "Add Content",
     success: "Successful!",
-    sentToInbox: "Video successfully sent to your inbox.",
-    returnToBot: "Return to Bot",
-    returnMsg: "Click the button below and return to the bot — your video has been sent to your inbox."
+    returnToBot: "Get Video / Return to Bot",
+    returnMsg: "Click the button below to access your content."
   },
   bn: {
     recommended: "সুপারিশকৃত",
@@ -91,8 +90,7 @@ export const translations = {
     publish: "পোস্ট পাবলিশ করুন",
     addContent: "মুভি এড করুন",
     success: "সফল হয়েছে!",
-    sentToInbox: "ভিডিওটি আপনার ইনবক্সে পাঠানো হয়েছে।",
-    returnToBot: "বটে ফিরে যান",
-    returnMsg: "নিচের বাটনে একটি ক্লিক করুন এবং বটে ফিরে যান — আপনার ভিডিওটি ইনবক্সে চলে গেছে।"
+    returnToBot: "বটে ফিরে যান / ভিডিও পান",
+    returnMsg: "আপনার কাঙ্ক্ষিত মুভিটি পেতে নিচের বাটনে ক্লিক করুন।"
   }
 };

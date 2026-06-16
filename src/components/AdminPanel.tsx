@@ -26,6 +26,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
     category: categories.find(c => c !== 'All') || 'Movie',
     isPremium: false,
     adLink: '',
+    botLink: '',
     downloadLinks: [{ label: 'Download Server 1', url: '' }]
   });
 
@@ -108,6 +109,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
           category: 'Movie', 
           isPremium: false, 
           adLink: '', 
+          botLink: '',
           downloadLinks: [{ label: 'Download Server 1', url: '' }] 
         });
         fetchMovies();
@@ -124,6 +126,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
       description: movie.description,
       category: movie.category,
       adLink: movie.adLink,
+      botLink: movie.botLink || '',
       isPremium: movie.isPremium,
       downloadLinks: movie.downloadLinks || [{ label: 'Download Server 1', url: '' }]
     });
@@ -184,6 +187,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                   category: categories.find(c => c !== 'All') || 'Movie', 
                   isPremium: false, 
                   adLink: '', 
+                  botLink: '',
                   downloadLinks: [{ label: 'Download Server 1', url: '' }] 
                 });
               }
@@ -294,6 +298,19 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                     className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
                     value={newMovie.adLink || ''}
                     onChange={e => setNewMovie({...newMovie, adLink: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Success Button Link (Return to Bot Link)</label>
+                <div className="relative">
+                  <Bot className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input 
+                    type="text" 
+                    placeholder="https://t.me/movebd_bot?start=..."
+                    className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
+                    value={newMovie.botLink || ''}
+                    onChange={e => setNewMovie({...newMovie, botLink: e.target.value})}
                   />
                 </div>
               </div>

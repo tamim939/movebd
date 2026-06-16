@@ -14,7 +14,6 @@ interface UnlockModalProps {
 export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockModalProps) {
   const [step, setStep] = useState<'intro' | 'adbox' | 'success'>('intro');
   const [timeLeft, setTimeLeft] = useState(10);
-  const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
     let timer: any;
@@ -28,64 +27,20 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
     return () => clearInterval(timer);
   }, [step, timeLeft]);
 
-  const handleReturnToBot = async () => {
-    // Check user object, then check URL params directly as a final fallback
-    const urlParams = new URL(window.location.href).searchParams;
-    const chatId = user?.id || urlParams.get('user_id') || urlParams.get('chat_id');
+  const handleReturnToBot = () => {
+    // Redirect to specified link or fallback to default bot link
+    const targetLink = movie.botLink || "https://t.me/movebd_bot";
     
-    if (!chatId) {
-       console.error("Missing chatId. User object:", user, "URL Params:", Array.from(urlParams.entries()));
-       alert("Telegram User ID not found. Please make sure you joined @movebd_bot and opened the app from there.");
-       return;
-    }
-
-    setSendingMessage(true);
-    try {
-      console.log(`[API Call] /api/send-vbox | Chat ID: ${chatId} | Movie: ${movie.title}`);
-      
-      const response = await fetch('/api/send-vbox', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          chat_id: String(chatId),
-          title: movie.title,
-          links: movie.downloadLinks
-        })
-      });
-      
-      const responseText = await response.text();
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (parseErr) {
-        console.error("Failed to parse API response:", responseText);
-        throw new Error("Server returned an invalid response.");
-      }
-      
-      if (!response.ok || !result.ok) {
-        console.error("API Delivery failure:", result);
-        throw new Error(result.error || "Message could not be delivered.");
-      }
-
-      console.log("Bot delivery confirmed:", result);
-      
-      // Success - Redirect user back to bot
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.close();
+    if (window.Telegram?.WebApp) {
+      // If it's a Telegram link and we are in WebApp, we might want to use openTelegramLink or just location
+      if (targetLink.includes('t.me')) {
+        window.Telegram.WebApp.openTelegramLink(targetLink);
       } else {
-        // Fallback for browser tests
-        const botUrl = "https://t.me/movebd_bot";
-        window.location.href = botUrl;
+        window.Telegram.WebApp.openLink(targetLink);
       }
-
-    } catch (e: any) {
-      console.error("Bot delivery catch block error:", e);
-      alert(`Error: ${e.message}\n\nPlease make sure you have started @movebd_bot.`);
-    } finally {
-      setSendingMessage(false);
+      setTimeout(() => window.Telegram.WebApp.close(), 1000);
+    } else {
+      window.location.href = targetLink;
     }
   };
 
@@ -156,10 +111,6 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
              </h2>
 
              <div className="mb-6 space-y-4">
-                <div className={`flex items-center gap-2 rounded-2xl p-4 transition-colors ${theme === 'dark' ? 'bg-green-500/5' : 'bg-green-50'}`}>
-                   <span className="text-xs font-bold text-green-500">✅ {t.sentToInbox}</span>
-                </div>
-                
                 <div className="space-y-2 mt-4 text-left">
                   {movie.downloadLinks.map((link, idx) => (
                     <button
@@ -183,16 +134,9 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
 
              <button 
                onClick={handleReturnToBot}
-               disabled={sendingMessage}
                className="group flex w-full items-center justify-center gap-3 rounded-[24px] bg-[#00c853] py-4 text-sm font-black text-white shadow-xl shadow-green-500/30 active:scale-95 transition-all hover:bg-[#00e676]"
              >
-                {sendingMessage ? (
-                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                ) : (
-                  <>
-                    <span className="text-xl">🤖</span> {t.returnToBot}
-                  </>
-                )}
+                <span className="text-xl">🤖</span> {t.returnToBot}
              </button>
           </motion.div>
         ) : (

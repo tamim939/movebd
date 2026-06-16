@@ -11,6 +11,7 @@ export interface Movie {
   category: string;
   isPremium: boolean;
   adLink: string;
+  botLink?: string;
   downloadLinks: DownloadLink[];
   createdAt: any;
 }
