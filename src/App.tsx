@@ -99,9 +99,19 @@ export default function App() {
     // Initialize Telegram
     expandTelegramWebApp();
     const tgUser = getTelegramUser();
+    
+    // Fallback: check URL for user_id
+    const urlParams = new URL(window.location.href).searchParams;
+    const urlUserId = urlParams.get('user_id');
+
     if (tgUser) {
       setUser(tgUser);
-      console.log('Telegram User:', tgUser);
+      console.log('Telegram User from WebApp:', tgUser);
+    } else if (urlUserId) {
+      // Create a mock user object if only ID exists in URL
+      const mockUser = { id: urlUserId, source: 'url' };
+      setUser(mockUser);
+      console.log('Telegram User from URL:', mockUser);
     }
 
     // Monitor Firebase Auth

@@ -29,17 +29,18 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
   }, [step, timeLeft]);
 
   const handleReturnToBot = async () => {
-    // Fallback to user provided test ID if not in Telegram environment
-    const chatId = user?.id || "7228630025"; 
+    const chatId = user?.id; 
     
     if (!chatId) {
-       alert("Telegram User ID not found. Please open this app inside Telegram.");
+       console.error("Missing chatId. User object:", user);
+       alert("Telegram User ID not found. Please open this app inside Telegram through the Bot.");
        return;
     }
 
     setSendingMessage(true);
     try {
-      console.log("Sending to bot via API...");
+      console.log(`[API Call] /api/send-vbox | Chat ID: ${chatId} | Movie: ${movie.title}`);
+      
       const response = await fetch('/api/send-vbox', {
         method: 'POST',
         headers: { 
@@ -47,40 +48,40 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          chat_id: chatId,
+          chat_id: String(chatId),
           title: movie.title,
           links: movie.downloadLinks
         })
       });
       
-      const text = await response.text();
-      console.log("API Raw Response:", text);
-      
+      const responseText = await response.text();
       let result;
       try {
-        result = JSON.parse(text);
-      } catch (err) {
-        throw new Error(`Server returned invalid response. Make sure the app is running correctly.`);
+        result = JSON.parse(responseText);
+      } catch (parseErr) {
+        console.error("Failed to parse API response:", responseText);
+        throw new Error("Server returned an invalid response. Please try again.");
       }
       
       if (!response.ok || !result.ok) {
-        throw new Error(result.error || "Failed to deliver message via Bot");
+        console.error("API Delivery failure:", result);
+        throw new Error(result.error || "Bot could not deliver the message. Ensure you have started @movebd_bot.");
       }
 
-      // Success
-      console.log("Message delivered successfully");
+      console.log("Bot delivery confirmed:", result);
       
       // Redirect to Bot
       if (window.Telegram?.WebApp) {
         window.Telegram.WebApp.close();
       } else {
+        // Fallback for browsers
         window.open('https://t.me/movebd_bot', '_blank');
         onClose();
       }
 
     } catch (e: any) {
-      console.error("Error in handleReturnToBot:", e);
-      alert(`Oops! ${e.message}\n\nPlease try again or contact support.`);
+      console.error("Bot delivery catch block error:", e);
+      alert(`Oops! ${e.message}\n\nTechnical Details: Check the console logs if you are the developer.`);
     } finally {
       setSendingMessage(false);
     }
