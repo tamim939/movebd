@@ -29,24 +29,32 @@ export default function Carousel() {
             className="h-full w-full object-cover"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           
-          <div className="absolute bottom-6 left-6 max-w-[60%]">
-            <h2 className="text-xl font-bold text-white line-clamp-1">{MOCK_MOVIES[index].title}</h2>
-            <p className="mt-1 text-xs text-zinc-300 line-clamp-1">{MOCK_MOVIES[index].description}</p>
-            <button className="mt-3 rounded-full bg-red-600 px-4 py-1.5 text-xs font-bold text-white shadow-lg shadow-red-900/40">
-              Join Now
-            </button>
+          <div className="absolute top-4 left-4">
+             <div className="h-6 w-12 flex items-center justify-center">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Bongo_BD_Logo.png" alt="logo" className="max-h-full brightness-0 invert" />
+             </div>
+          </div>
+
+          <div className="absolute bottom-4 left-4 right-4">
+            <h2 className="text-sm font-bold text-white mb-1">{MOCK_MOVIES[index].title}</h2>
+            <div className="flex items-center justify-between">
+               <span className="text-[10px] font-bold text-white uppercase tracking-tighter opacity-90">Coming Soon</span>
+               <button className="rounded-lg bg-red-600 px-4 py-1.5 text-[10px] font-black text-white hover:bg-red-700 transition-colors shadow-lg shadow-red-900/40 uppercase">
+                Join Now
+               </button>
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute bottom-4 right-6 flex gap-1.5">
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
         {MOCK_MOVIES.map((_, i) => (
           <div
             key={i}
-            className={`h-1 rounded-full transition-all ${
-              i === index ? "w-4 bg-red-600" : "w-1.5 bg-zinc-600"
+            className={`h-1.5 rounded-full transition-all ${
+              i === index ? "w-6 bg-red-600" : "w-1.5 bg-slate-400"
             }`}
           />
         ))}

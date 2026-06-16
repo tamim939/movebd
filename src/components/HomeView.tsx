@@ -7,7 +7,7 @@ import MovieCard from './MovieCard';
 import { Category } from '../types';
 import { MOCK_MOVIES } from '../data';
 
-export default function HomeView({ user }: { user: any }) {
+export default function HomeView({ user, favorites, onToggleFavorite }: { user: any, favorites: string[], onToggleFavorite: (id: string) => void }) {
   const [activeCategory, setActiveCategory] = useState<Category>('All');
 
   const filteredMovies = activeCategory === 'All' 
@@ -15,29 +15,33 @@ export default function HomeView({ user }: { user: any }) {
     : MOCK_MOVIES.filter(m => m.category === activeCategory);
 
   return (
-    <div className="pb-32 overflow-y-auto">
+    <div className="pb-32 overflow-y-auto bg-white">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 pt-6">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-black italic tracking-tighter text-white">
-            Moviee <span className="rounded bg-red-600 px-1.5 py-0.5 not-italic tracking-normal text-sm align-middle">Link</span>
+      <header className="flex items-center justify-between px-4 pt-4 bg-white sticky top-0 z-50">
+        <div className="flex items-center gap-1">
+          <h1 className="text-2xl font-black text-slate-900 flex items-center">
+            Moviee <span className="ml-1 rounded-md bg-red-600 px-1.5 py-0.5 font-bold text-sm text-white">Link</span>
           </h1>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 rounded-full bg-zinc-900 px-3 py-1.5 border border-white/5">
-             {user?.photo_url ? (
-               <img src={user.photo_url} alt="" className="h-5 w-5 rounded-full object-cover" />
-             ) : (
-               <div className="h-5 w-5 rounded-full bg-gradient-to-tr from-orange-400 to-red-600" />
-             )}
-             <span className="text-[10px] font-bold text-white uppercase italic max-w-[80px] truncate">
-               {user?.first_name || 'Trader Tami...'}
-             </span>
+        <div className="flex items-center">
+          <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/50 p-1 pr-3 shadow-sm">
+             <div className="relative">
+               {user?.photo_url ? (
+                 <img src={user.photo_url} alt="" className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-sm" referrerPolicy="no-referrer" />
+               ) : (
+                 <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gradient-to-tr from-orange-400 to-red-600 text-[10px] font-bold text-white shadow-sm">
+                   {user?.first_name?.charAt(0) || 'T'}
+                 </div>
+               )}
+               <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500" />
+             </div>
+             <div className="flex flex-col">
+               <span className="text-[10px] font-black italic tracking-tighter text-slate-800 leading-none">
+                 ⟨ {user?.first_name || 'TRADER TAMI...'}
+               </span>
+               {user?.username && <span className="text-[8px] font-medium text-slate-400 leading-none">@{user.username}</span>}
+             </div>
           </div>
-          <button className="relative rounded-full bg-zinc-900 p-2 border border-white/5">
-            <Bell className="h-5 w-5 text-zinc-400" />
-            <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-red-600 border-2 border-zinc-950" />
-          </button>
         </div>
       </header>
 
@@ -50,15 +54,15 @@ export default function HomeView({ user }: { user: any }) {
       </div>
 
       {/* Movie List */}
-      <div className="mt-8 px-4">
-        <div className="flex items-center justify-between px-2 mb-4">
-          <h2 className="text-lg font-bold text-white">Recommended for you</h2>
-          <button className="text-xs font-semibold text-red-500">See all</button>
-        </div>
-        
-        <div className="grid grid-cols-1 gap-6">
+      <div className="mt-4 px-4 bg-white">
+        <div className="grid grid-cols-1 gap-8">
           {filteredMovies.map(movie => (
-            <MovieCard key={movie.id} movie={movie} />
+            <MovieCard 
+              key={movie.id} 
+              movie={movie} 
+              isFavorited={favorites.includes(movie.id)}
+              onToggleFavorite={onToggleFavorite}
+            />
           ))}
         </div>
       </div>

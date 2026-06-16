@@ -19,7 +19,7 @@ export default function BottomNav({ activeTab, setActiveTab, userPhoto }: Bottom
   ];
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 z-40 overflow-hidden rounded-3xl bg-zinc-900/80 p-2 backdrop-blur-2xl border border-white/5 shadow-2xl">
+    <div className="fixed bottom-4 left-4 right-4 z-40 overflow-hidden rounded-[28px] border border-slate-100 bg-white/95 p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-md">
       <div className="flex items-center justify-around">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -29,26 +29,26 @@ export default function BottomNav({ activeTab, setActiveTab, userPhoto }: Bottom
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabId)}
-              className="relative flex flex-col items-center gap-1 p-2"
+              className="relative flex flex-col items-center gap-1 px-4 py-2 transition-all active:scale-90"
             >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTabBadge"
-                  className="absolute -top-1 h-1 w-8 rounded-full bg-red-600"
-                />
-              )}
-              
               <div className="relative">
                 {tab.id === 'profile' && userPhoto ? (
-                  <img src={userPhoto} alt="User" className={`h-6 w-6 rounded-full border-2 transition-all ${isActive ? 'border-red-600 scale-110' : 'border-zinc-700'}`} />
+                  <img src={userPhoto} alt="User" className={`h-6 w-6 rounded-full border-2 transition-all ${isActive ? 'border-red-600 scale-110' : 'border-slate-200'}`} referrerPolicy="no-referrer" />
                 ) : (
-                  <Icon className={`h-6 w-6 transition-all ${isActive ? 'text-red-500 scale-110' : 'text-zinc-500'}`} />
+                  <Icon className={`h-5 w-5 transition-all ${isActive ? 'text-red-500 scale-110' : 'text-slate-400'}`} />
                 )}
               </div>
               
-              <span className={`text-[10px] font-medium transition-colors ${isActive ? 'text-white' : 'text-zinc-500'}`}>
-                {isActive ? tab.label : ''}
+              <span className={`text-[9px] font-bold transition-colors ${isActive ? 'text-red-500' : 'text-slate-400'}`}>
+                {tab.label}
               </span>
+              
+              {isActive && (
+                <motion.div
+                  layoutId="activeTabUnderline"
+                  className="absolute -bottom-1 h-1 w-4 rounded-full bg-red-600"
+                />
+              )}
             </button>
           );
         })}
