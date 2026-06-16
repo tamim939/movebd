@@ -14,16 +14,59 @@ import { getTelegramUser, expandTelegramWebApp } from './lib/telegram';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { MOCK_MOVIES } from './data';
 import MovieCard from './components/MovieCard';
+import UnlockModal from './components/UnlockModal';
+import { Movie } from './types';
+import { db } from './lib/firebase';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { translations, Language } from './translations';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<TabId>('home');
   const [user, setUser] = useState<any>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  
+  // New States
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('app_theme') as 'light' | 'dark') || 'light';
+  });
+  const [lang, setLang] = useState<Language>(() => {
+    return (localStorage.getItem('app_lang') as Language) || 'en';
+  });
+
+  const t = translations[lang];
+
+  useEffect(() => {
+    localStorage.setItem('app_theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('app_lang', lang);
+  }, [lang]);
+
+  useEffect(() => {
+    // Monitor Movies from Firestore
+    const q = query(collection(db, "movies"), orderBy("createdAt", "desc"));
+    const unsubscribeMovies = onSnapshot(q, (snapshot) => {
+      const moviesData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...(doc.data() as any)
+      })) as Movie[];
+      setMovies(moviesData);
+    });
+
+    return () => unsubscribeMovies();
+  }, []);
 
   useEffect(() => {
     // Load local favorites if any
@@ -82,7 +125,7 @@ export default function App() {
   const isSpecialUser = user?.username === 'TRADER_TAMIM_3' || !user?.id; // Allow in preview for dev
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 selection:bg-red-600/30">
+    <div className={`min-h-screen selection:bg-red-600/30 transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950 text-white' : 'bg-white text-slate-900'}`}>
       <AnimatePresence>
         {showSplash && (
           <Splash onFinish={() => setShowSplash(false)} />
@@ -93,7 +136,7 @@ export default function App() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="relative mx-auto max-w-md bg-white min-h-screen"
+          className={`relative mx-auto max-w-md min-h-screen shadow-2xl transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950' : 'bg-white'}`}
         >
           {showAdminLogin ? (
             <AdminLogin 
@@ -101,53 +144,68 @@ export default function App() {
               onCancel={() => setShowAdminLogin(false)} 
             />
           ) : (
-            <>
+            <div className="h-screen overflow-y-auto no-scrollbar pb-32">
               {activeTab === 'home' && (
                 <HomeView 
                   user={user} 
+                  movies={movies}
+                  loading={movies.length === 0}
                   favorites={favorites}
                   onToggleFavorite={toggleFavorite}
+                  onMovieClick={setSelectedMovie}
+                  t={t}
+                  theme={theme}
                 />
               )}
               {activeTab === 'search' && (
                 isAdmin ? <AdminPanel /> : (
-                  <div className="flex h-[80vh] flex-col items-center justify-center gap-4 text-center px-6">
-                    <div className="rounded-full bg-zinc-900 p-6">
+                  <div className={`flex h-[80vh] flex-col items-center justify-center gap-4 text-center px-6 transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950' : 'bg-white'}`}>
+                    <div className={`rounded-full p-8 shadow-inner ${theme === 'dark' ? 'bg-zinc-900 shadow-white/5' : 'bg-slate-50 shadow-black/5'}`}>
                       <motion.div
                         animate={{ rotate: [0, 10, -10, 0] }}
                         transition={{ repeat: Infinity, duration: 2 }}
+                        className="text-4xl"
                       >
                          🔍
                       </motion.div>
                     </div>
-                    <h2 className="text-xl font-bold">Search coming soon</h2>
-                    <p className="text-sm text-zinc-500">We are working on bringing the best search experience for you.</p>
+                    <h2 className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                      {t.search} {t.comingSoon}
+                    </h2>
+                    <p className={`text-sm font-medium max-w-[200px] ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>We are working on bringing the best search experience for you.</p>
                   </div>
                 )
               )}
               {activeTab === 'upcoming' && (
-                <div className="flex h-[80vh] items-center justify-center text-zinc-500">
-                  Upcoming movies coming soon...
+                <div className={`flex h-[80vh] flex-col items-center justify-center gap-4 text-center px-6 transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950' : 'bg-white'}`}>
+                   <div className="text-5xl mb-2">📅</div>
+                   <h2 className={`text-xl font-black uppercase tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{t.comingSoon}</h2>
+                   <p className={`text-sm font-medium ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>Stay tuned for upcoming blockbusters.</p>
                 </div>
               )}
               {activeTab === 'favorite' && (
-                <div className="pb-32 overflow-y-auto px-4 pt-8">
-                  <h2 className="text-2xl font-black text-slate-800 mb-6">Favorites ❤️</h2>
+                <div className={`px-4 pt-8 min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950' : 'bg-white'}`}>
+                  <h2 className={`text-2xl font-black mb-8 uppercase tracking-tighter px-1 flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                    {t.favorite} <span className="text-red-500">❤️</span>
+                  </h2>
                   {favorites.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-8">
-                      {MOCK_MOVIES.filter(m => favorites.includes(m.id)).map(movie => (
-                        <MovieCard 
-                          key={movie.id} 
-                          movie={movie} 
-                          isFavorited={true}
-                          onToggleFavorite={toggleFavorite}
-                        />
+                    <div className="grid grid-cols-1 gap-10">
+                      {movies.filter(m => favorites.includes(m.id)).map(movie => (
+                        <div key={movie.id} onClick={() => setSelectedMovie(movie)}>
+                          <MovieCard 
+                            movie={movie} 
+                            isFavorited={true}
+                            onToggleFavorite={toggleFavorite}
+                            theme={theme}
+                          />
+                        </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-50">
-                       <div className="text-6xl">❤️</div>
-                       <p className="font-bold text-slate-400 uppercase tracking-tighter">Your list is empty</p>
+                    <div className="flex flex-col items-center justify-center py-20 text-center gap-6 opacity-30">
+                       <div className="text-7xl">💔</div>
+                       <p className={`font-black uppercase tracking-[0.2em] text-xs ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{t.emptyList}</p>
+                       <button onClick={() => setActiveTab('home')} className="mt-2 text-red-600 font-black text-sm uppercase tracking-widest border-b-2 border-red-600 pb-1">{t.browse}</button>
                     </div>
                   )}
                 </div>
@@ -156,9 +214,14 @@ export default function App() {
                 <ProfileView 
                   user={user} 
                   onGoHome={() => setActiveTab('home')}
-                  onLogout={handleLogout}
                   isAdmin={isAdmin}
-                  onTriggerAdminLogin={isSpecialUser ? () => setShowAdminLogin(true) : undefined}
+                  onLogout={handleLogout}
+                  onTriggerAdminLogin={() => setShowAdminLogin(true)}
+                  theme={theme}
+                  setTheme={setTheme}
+                  lang={lang}
+                  setLang={setLang}
+                  t={t}
                 />
               )}
 
@@ -166,9 +229,23 @@ export default function App() {
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab} 
                 userPhoto={user?.photo_url}
+                isAdmin={isAdmin}
+                theme={theme}
+                t={t}
               />
-            </>
+            </div>
           )}
+
+          <AnimatePresence>
+            {selectedMovie && (
+              <UnlockModal 
+                movie={selectedMovie} 
+                onClose={() => setSelectedMovie(null)} 
+                t={t}
+                theme={theme}
+              />
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </div>

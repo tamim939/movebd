@@ -1,133 +1,280 @@
 import React from 'react';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
-import { useState } from 'react';
-import { Movie, Category, CATEGORIES } from '../types';
-import { MOCK_MOVIES } from '../data';
+import { Plus, Trash2, Edit2, Link, Play, Save, X, PlusCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Movie, Category, CATEGORIES, DownloadLink } from '../types';
+import { db } from '../lib/firebase';
+import { 
+  collection, 
+  addDoc, 
+  getDocs, 
+  deleteDoc, 
+  doc, 
+  query, 
+  orderBy,
+  serverTimestamp 
+} from 'firebase/firestore';
 
 export default function AdminPanel() {
-  const [movies, setMovies] = useState<Movie[]>(MOCK_MOVIES);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [newMovie, setNewMovie] = useState<Partial<Movie>>({
     category: 'Movie',
-    isPremium: false
+    isPremium: false,
+    adLink: '',
+    downloadLinks: [{ label: 'Download Server 1', url: '' }]
   });
 
-  const handleAdd = () => {
-    if (newMovie.title && newMovie.link && newMovie.thumbnail) {
-      const movie: Movie = {
-        ...newMovie as Movie,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date()
-      };
-      setMovies([movie, ...movies]);
-      setIsAdding(false);
-      setNewMovie({ category: 'Movie', isPremium: false });
+  const fetchMovies = async () => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, "movies"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      const moviesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Movie[];
+      setMovies(moviesData);
+    } catch (e) {
+      console.error("Error fetching movies:", e);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = (id: string) => {
-    setMovies(movies.filter(m => m.id !== id));
+  useEffect(() => {
+    fetchMovies();
+  }, []);
+
+  const handleAdd = async () => {
+    if (newMovie.title && newMovie.thumbnail && newMovie.adLink) {
+      try {
+        await addDoc(collection(db, "movies"), {
+          ...newMovie,
+          createdAt: serverTimestamp()
+        });
+        setIsAdding(false);
+        setNewMovie({ 
+          category: 'Movie', 
+          isPremium: false, 
+          adLink: '', 
+          downloadLinks: [{ label: 'Download Server 1', url: '' }] 
+        });
+        fetchMovies();
+      } catch (e) {
+        console.error("Error adding movie:", e);
+      }
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this content?')) {
+      try {
+        await deleteDoc(doc(db, "movies", id));
+        fetchMovies();
+      } catch (e) {
+        console.error("Error deleting movie:", e);
+      }
+    }
+  };
+
+  const addDownloadLink = () => {
+    setNewMovie({
+      ...newMovie,
+      downloadLinks: [...(newMovie.downloadLinks || []), { label: `Download Server ${(newMovie.downloadLinks?.length || 0) + 1}`, url: '' }]
+    });
+  };
+
+  const updateDownloadLink = (index: number, field: keyof DownloadLink, value: string) => {
+    const links = [...(newMovie.downloadLinks || [])];
+    links[index] = { ...links[index], [field]: value };
+    setNewMovie({ ...newMovie, downloadLinks: links });
+  };
+
+  const removeDownloadLink = (index: number) => {
+    const links = [...(newMovie.downloadLinks || [])];
+    links.splice(index, 1);
+    setNewMovie({ ...newMovie, downloadLinks: links });
   };
 
   return (
-    <div className="p-6 pb-32">
+    <div className="p-6 pb-32 min-h-screen bg-zinc-950 text-white">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+        <div>
+          <h2 className="text-3xl font-black italic tracking-tighter">ADMIN <span className="text-red-600">DASHBOARD</span></h2>
+          <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Manage Content & Links</p>
+        </div>
         <button 
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-bold shadow-lg shadow-red-900/20"
+          className="flex items-center gap-2 rounded-2xl bg-red-600 px-6 py-3 text-sm font-black shadow-xl shadow-red-900/40 active:scale-95 transition-all"
         >
-          {isAdding ? 'Cancel' : <><Plus className="h-4 w-4" /> Add Movie</>}
+          {isAdding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          {isAdding ? 'CANCEL' : 'ADD CONTENT'}
         </button>
       </div>
 
       {isAdding && (
-        <div className="mb-8 space-y-4 rounded-3xl bg-zinc-900 p-6 border border-white/5 shadow-xl">
-          <div>
-            <label className="block text-xs font-medium text-zinc-500 mb-1">Title</label>
-            <input 
-              type="text" 
-              placeholder="Movie Title"
-              className="w-full rounded-xl bg-zinc-800 px-4 py-2 test-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-              value={newMovie.title || ''}
-              onChange={e => setNewMovie({...newMovie, title: e.target.value})}
-            />
+        <div className="mb-8 space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Title</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. Karuppu (2026) Movie"
+                  className="w-full rounded-2xl bg-zinc-800 px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
+                  value={newMovie.title || ''}
+                  onChange={e => setNewMovie({...newMovie, title: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Thumbnail Image URL</label>
+                <input 
+                  type="text" 
+                  placeholder="https://..."
+                  className="w-full rounded-2xl bg-zinc-800 px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
+                  value={newMovie.thumbnail || ''}
+                  onChange={e => setNewMovie({...newMovie, thumbnail: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Short Description</label>
+                <textarea 
+                  placeholder="Write a brief intro..."
+                  className="w-full rounded-2xl bg-zinc-800 px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5 min-h-[100px]"
+                  value={newMovie.description || ''}
+                  onChange={e => setNewMovie({...newMovie, description: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Category</label>
+                <select 
+                  className="w-full rounded-2xl bg-zinc-800 px-5 py-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
+                  value={newMovie.category}
+                  onChange={e => setNewMovie({...newMovie, category: e.target.value as Category})}
+                >
+                  {CATEGORIES.filter(c => c !== 'All').map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Redirect/Ad Link (10s Timer)</label>
+                <div className="relative">
+                  <Link className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input 
+                    type="text" 
+                    placeholder="https://tvprobd.vercel.app"
+                    className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
+                    value={newMovie.adLink || ''}
+                    onChange={e => setNewMovie({...newMovie, adLink: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-zinc-800/50 border border-white/5">
+                <input 
+                  type="checkbox" 
+                  id="isPremium"
+                  checked={newMovie.isPremium}
+                  onChange={e => setNewMovie({...newMovie, isPremium: e.target.checked})}
+                  className="h-5 w-5 rounded-lg accent-red-600"
+                />
+                <label htmlFor="isPremium" className="text-xs font-bold text-white uppercase tracking-tight">VIP Content Only</label>
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-zinc-500 mb-1">Thumbnail URL</label>
-            <input 
-              type="text" 
-              placeholder="https://..."
-              className="w-full rounded-xl bg-zinc-800 px-4 py-2 test-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-              value={newMovie.thumbnail || ''}
-              onChange={e => setNewMovie({...newMovie, thumbnail: e.target.value})}
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-zinc-500 mb-1">Telegram Link</label>
-            <input 
-              type="text" 
-              placeholder="https://t.me/..."
-              className="w-full rounded-xl bg-zinc-800 px-4 py-2 test-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-              value={newMovie.link || ''}
-              onChange={e => setNewMovie({...newMovie, link: e.target.value})}
-            />
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-zinc-500 mb-1">Category</label>
-              <select 
-                className="w-full rounded-xl bg-zinc-800 px-4 py-2 test-sm text-white focus:outline-none"
-                value={newMovie.category}
-                onChange={e => setNewMovie({...newMovie, category: e.target.value as Category})}
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block text-[10px] font-black text-zinc-500 uppercase ml-1">Target Download Links</label>
+              <button 
+                onClick={addDownloadLink}
+                className="text-[10px] font-black text-red-500 flex items-center gap-1 hover:text-red-400"
               >
-                {CATEGORIES.filter(c => c !== 'All').map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                <PlusCircle className="h-3 w-3" /> ADD ANOTHER LINK
+              </button>
             </div>
-            <div className="flex items-center gap-2 pt-5">
-              <input 
-                type="checkbox" 
-                id="isPremium"
-                checked={newMovie.isPremium}
-                onChange={e => setNewMovie({...newMovie, isPremium: e.target.checked})}
-                className="h-4 w-4 rounded bg-zinc-800 text-red-600"
-              />
-              <label htmlFor="isPremium" className="text-xs font-medium text-white">Premium Content</label>
-            </div>
+            {newMovie.downloadLinks?.map((link, index) => (
+              <div key={index} className="flex gap-3 items-start bg-black/20 p-4 rounded-2xl border border-white/5">
+                <div className="flex-1 space-y-2">
+                   <input 
+                    type="text" 
+                    placeholder="Link Label (e.g. Download 720p)"
+                    className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-xs text-white focus:outline-none"
+                    value={link.label}
+                    onChange={e => updateDownloadLink(index, 'label', e.target.value)}
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Target URL (e.g. Mega Link)"
+                    className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-xs text-white focus:outline-none"
+                    value={link.url}
+                    onChange={e => updateDownloadLink(index, 'url', e.target.value)}
+                  />
+                </div>
+                {index > 0 && (
+                  <button 
+                    onClick={() => removeDownloadLink(index)}
+                    className="p-2 text-zinc-500 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
+
           <button 
             onClick={handleAdd}
-            className="w-full rounded-xl bg-red-600 py-3 text-sm font-bold shadow-lg shadow-red-900/30"
+            className="w-full rounded-2xl bg-red-600 py-4 text-sm font-black shadow-2xl shadow-red-900/40 hover:bg-red-500 transition-all active:scale-[0.98]"
           >
-            Save Content
+            PUBLISH CONTENT
           </button>
         </div>
       )}
 
-      <div className="space-y-4">
-        {movies.map(movie => (
-          <div key={movie.id} className="flex items-center gap-4 rounded-2xl bg-zinc-900 p-3 border border-white/5">
-            <img src={movie.thumbnail} alt="" className="h-16 w-16 rounded-xl object-cover" />
-            <div className="flex-1 overflow-hidden">
-              <h3 className="line-clamp-1 font-bold text-white">{movie.title}</h3>
-              <p className="text-[10px] text-zinc-500 uppercase font-black">{movie.category}</p>
+      {loading ? (
+        <div className="flex py-20 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-600 border-t-transparent" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em] mb-2 px-1">Recent Posts ({movies.length})</h3>
+          {movies.map(movie => (
+            <div key={movie.id} className="group flex items-center gap-4 rounded-3xl bg-zinc-900/50 p-3 border border-white/5 hover:bg-zinc-900 transition-all">
+              <div className="relative h-20 w-20 shrink-0">
+                <img src={movie.thumbnail} alt="" className="h-full w-full rounded-2xl object-cover" />
+                {movie.isPremium && <div className="absolute top-1 left-1 bg-yellow-500 text-[8px] font-black text-black px-1.5 rounded-md">VIP</div>}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <h3 className="line-clamp-1 font-bold text-white text-sm">{movie.title}</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] text-zinc-500 font-black uppercase px-2 py-0.5 rounded-lg bg-zinc-800">{movie.category}</span>
+                  <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[100px]">{movie.adLink}</span>
+                </div>
+              </div>
+              <div className="flex gap-2 pr-2">
+                <button 
+                  onClick={() => handleDelete(movie.id)}
+                  className="rounded-xl bg-red-600/10 p-3 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button className="rounded-full bg-zinc-800 p-2 text-zinc-400 hover:text-white hover:bg-zinc-700">
-                <Edit2 className="h-4 w-4" />
-              </button>
-              <button 
-                onClick={() => handleDelete(movie.id)}
-                className="rounded-full bg-red-600/10 p-2 text-red-500 hover:bg-red-600 hover:text-white"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+          ))}
+
+          {movies.length === 0 && (
+            <div className="py-20 text-center rounded-[32px] border-2 border-dashed border-white/5">
+               <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">No content found</p>
+               <button onClick={() => setIsAdding(true)} className="mt-4 text-red-500 text-xs font-black">Add your first post</button>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

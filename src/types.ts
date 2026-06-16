@@ -1,11 +1,17 @@
+export interface DownloadLink {
+  label: string;
+  url: string;
+}
+
 export interface Movie {
   id: string;
   title: string;
   description: string;
   thumbnail: string;
-  link: string;
   category: string;
   isPremium: boolean;
+  adLink: string;
+  downloadLinks: DownloadLink[];
   createdAt: any;
 }
 

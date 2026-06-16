@@ -1,4 +1,5 @@
-import { Home, Search, Calendar, Heart, User } from 'lucide-react';
+import React from 'react';
+import { Home, Search, Calendar, Heart, User, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export type TabId = 'home' | 'search' | 'upcoming' | 'favorite' | 'profile';
@@ -9,17 +10,17 @@ interface BottomNavProps {
   userPhoto?: string;
 }
 
-export default function BottomNav({ activeTab, setActiveTab, userPhoto }: BottomNavProps) {
+export default function BottomNav({ activeTab, setActiveTab, userPhoto, isAdmin, theme, t }: BottomNavProps & { isAdmin?: boolean, theme?: string, t: any }) {
   const tabs = [
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'search', icon: Search, label: 'Search' },
-    { id: 'upcoming', icon: Calendar, label: 'Upcoming' },
-    { id: 'favorite', icon: Heart, label: 'Favorite' },
-    { id: 'profile', icon: User, label: 'Profile' },
+    { id: 'home', icon: Home, label: t.home },
+    { id: 'search', icon: isAdmin ? ShieldCheck : Search, label: isAdmin ? 'Dashboard' : t.search },
+    { id: 'upcoming', icon: Calendar, label: t.upcoming },
+    { id: 'favorite', icon: Heart, label: t.favorite },
+    { id: 'profile', icon: User, label: t.profile },
   ];
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-40 overflow-hidden rounded-[28px] border border-slate-100 bg-white/95 p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-md">
+    <div className={`fixed bottom-4 left-4 right-4 z-40 overflow-hidden rounded-[28px] border p-1.5 shadow-2xl backdrop-blur-md transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-900/90 border-white/10 shadow-black' : 'bg-white/95 border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.08)]'}`}>
       <div className="flex items-center justify-around">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;

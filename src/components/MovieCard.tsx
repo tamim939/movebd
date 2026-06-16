@@ -7,9 +7,10 @@ interface MovieCardProps {
   movie: Movie;
   isFavorited: boolean;
   onToggleFavorite: (id: string) => void;
+  theme?: string;
 }
 
-const MovieCard: React.FC<MovieCardProps> = ({ movie, isFavorited, onToggleFavorite }) => {
+const MovieCard: React.FC<MovieCardProps> = ({ movie, isFavorited, onToggleFavorite, theme }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -17,7 +18,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, isFavorited, onToggleFavor
       viewport={{ once: true }}
       className="group relative flex flex-col gap-3 rounded-3xl"
     >
-      <div className="relative aspect-video overflow-hidden rounded-[24px] border-4 border-slate-100 shadow-sm">
+      <div className={`relative aspect-video overflow-hidden rounded-[24px] border-4 shadow-sm transition-colors duration-300 ${theme === 'dark' ? 'border-zinc-900' : 'border-slate-100'}`}>
         <img
           src={movie.thumbnail}
           alt={movie.title}
@@ -26,7 +27,10 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, isFavorited, onToggleFavor
         />
         
         <button 
-          onClick={() => onToggleFavorite(movie.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(movie.id);
+          }}
           className="absolute top-2 right-2 rounded-full bg-black/30 p-2.5 backdrop-blur-md transition-colors hover:bg-slate-800/40 group/heart active:bg-red-500"
         >
           <Heart 
@@ -44,11 +48,11 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, isFavorited, onToggleFavor
       </div>
 
       <div className="flex items-center gap-3 px-1">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-black text-slate-400">
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-black transition-colors ${theme === 'dark' ? 'bg-zinc-900 text-zinc-700' : 'bg-slate-100 text-slate-400'}`}>
           MB
         </div>
         <div className="flex-1 overflow-hidden">
-          <h3 className="line-clamp-1 text-sm font-black text-slate-800">
+          <h3 className={`line-clamp-1 text-sm font-black transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
             {movie.title}
           </h3>
         </div>
