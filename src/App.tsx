@@ -243,6 +243,7 @@ export default function App() {
                 onClose={() => setSelectedMovie(null)} 
                 t={t}
                 theme={theme}
+                user={user}
               />
             )}
           </AnimatePresence>
