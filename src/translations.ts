@@ -39,13 +39,13 @@ export const translations = {
     coins: "Coins",
     referrals: "Referrals",
     vipStatus: "VIP Status",
-    memberLabel: "Moviee Link Member",
+    memberLabel: "Movie GO Member",
     recentPosts: "Recent Posts",
     publish: "Publish Content",
     addContent: "Add Content",
     success: "Successful!",
-    returnToBot: "Get Video / Return to Bot",
-    returnMsg: "Click the button below to access your content."
+    returnToBot: "Return to Bot",
+    returnMsg: "Your video has been sent to your inbox. Click the button below to return to the bot."
   },
   bn: {
     recommended: "সুপারিশকৃত",
@@ -85,12 +85,12 @@ export const translations = {
     coins: "কয়েন",
     referrals: "রেফারেল",
     vipStatus: "ভিআইপি স্ট্যাটাস",
-    memberLabel: "মুভি লিংক মেম্বার",
+    memberLabel: "Movie GO মেম্বার",
     recentPosts: "সাম্প্রতিক পোস্ট",
     publish: "পোস্ট পাবলিশ করুন",
     addContent: "মুভি এড করুন",
     success: "সফল হয়েছে!",
-    returnToBot: "বটে ফিরে যান / ভিডিও পান",
-    returnMsg: "আপনার কাঙ্ক্ষিত মুভিটি পেতে নিচের বাটনে ক্লিক করুন।"
+    returnToBot: "🤖 বটে ফিরে যান",
+    returnMsg: "✅ ভিডিওটি আপনার ইনবক্সে পাঠানো হয়েছে।\n\nনিচের বাটনে একটি ক্লিক করুন এবং বটে ফিরে যান — আপনার ভিডিওটি ইনবক্সে চলে গেছে। 🎬"
   }
 };

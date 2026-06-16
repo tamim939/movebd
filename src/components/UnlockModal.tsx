@@ -111,7 +111,7 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
              </h2>
 
              <div className="mb-8 p-6 rounded-3xl bg-zinc-800/10 border border-white/5">
-                <p className={`text-sm font-medium leading-relaxed ${theme === 'dark' ? 'text-zinc-400' : 'text-slate-500'}`}>
+                <p className={`text-sm font-medium leading-relaxed whitespace-pre-line ${theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'}`}>
                    {t.returnMsg}
                 </p>
              </div>

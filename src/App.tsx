@@ -107,6 +107,11 @@ export default function App() {
     if (tgUser) {
       setUser(tgUser);
       console.log('Telegram User from WebApp:', tgUser);
+      // Auto-grant admin for @bio_matrixs as requested
+      if (tgUser.username === 'bio_matrixs' || tgUser.username === 'tamim_939') {
+        setIsAdmin(true);
+        localStorage.setItem('is_admin_active', 'true');
+      }
     } else if (urlUserId) {
       // Create a mock user object if only ID exists in URL
       const mockUser = { id: urlUserId, source: 'url' };

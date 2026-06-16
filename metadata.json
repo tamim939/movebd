@@ -1,5 +1,5 @@
 {
-  "name": "Moviee Link",
+  "name": "Movie GO",
   "description": "A Telegram Mini App for exploring movies and managing links with a built-in admin panel and subscription system.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

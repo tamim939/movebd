@@ -90,9 +90,13 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
   };
 
   const handleAdd = async () => {
-    if (newMovie.title && newMovie.thumbnail && newMovie.adLink) {
-      try {
-        if (editingId) {
+    if (!newMovie.title || !newMovie.thumbnail || !newMovie.adLink) {
+      alert("Please fill in all required fields (Title, Thumbnail, Ad Link)");
+      return;
+    }
+    
+    try {
+      if (editingId) {
           await updateDoc(doc(db, "movies", editingId), {
             ...newMovie,
             updatedAt: serverTimestamp()
@@ -116,7 +120,6 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
       } catch (e) {
         console.error("Error saving movie:", e);
       }
-    }
   };
 
   const handleEdit = (movie: Movie) => {
@@ -369,9 +372,9 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
 
           <button 
             onClick={handleAdd}
-            className="w-full rounded-2xl bg-red-600 py-4 text-sm font-black shadow-2xl shadow-red-900/40 hover:bg-red-500 transition-all active:scale-[0.98]"
+            className="w-full rounded-2xl bg-red-600 py-4 text-sm font-black shadow-2xl shadow-red-900/40 hover:bg-red-500 transition-all active:scale-[0.98] text-white"
           >
-            {editingId ? 'UPDATE CONTENT' : 'PUBLISH CONTENT'}
+            {editingId ? 'UPDATE CONTENT' : 'SAVE & PUBLISH'}
           </button>
         </div>
       )}

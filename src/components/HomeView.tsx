@@ -22,7 +22,7 @@ export default function HomeView({ user, movies, loading, favorites, onToggleFav
       <header className={`flex items-center justify-between px-4 pt-4 sticky top-0 z-50 pb-2 transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950/80 backdrop-blur-lg' : 'bg-white/80 backdrop-blur-lg'}`}>
         <div className="flex items-center gap-1">
           <h1 className={`text-2xl font-black flex items-center tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-            Moviee <span className="ml-1 rounded-md bg-red-600 px-1.5 py-0.5 font-bold text-sm text-white">Link</span>
+            MOVIE <span className="ml-1 rounded-md bg-red-600 px-1.5 py-0.5 font-black text-sm text-white italic">GO</span>
           </h1>
         </div>
         <div className="flex items-center">
