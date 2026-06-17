@@ -21,9 +21,10 @@ export const translations = {
     logout: "Admin Logout",
     unlocked: "Video Unlocked!",
     unlockTitle: "Unlock Your Video",
+    unlockSub: "Video Unlock Platform",
     timerMsg: "You must watch a 10-second ad.",
     timerMsgSub: "If not watched, you won't get the video.",
-    timerNote: "Click the button and stay on the page for at least 10 seconds, then come back.",
+    timerNote: "Click the button below and stay on the page for at least 10 seconds, then come back.",
     timerWarn: "Do not return before 10 seconds",
     adBtn: "Watch Ad & Unlock Video",
     waitLabel: "Please wait...",
@@ -67,11 +68,12 @@ export const translations = {
     logout: "এডমিন লগআউট",
     unlocked: "ভিডিও আনলক হয়েছে!",
     unlockTitle: "ভিডিও আনলক করুন",
+    unlockSub: "ভিডিও আনলক করুন",
     timerMsg: "১০ সেকেন্ডের একটি বিজ্ঞাপন দেখতে হবে।",
     timerMsgSub: "যদি না দেখেন, আপনার কাঙ্ক্ষিত ভিডিও পাবেন না।",
     timerNote: "নিচের বাটনে ক্লিক করুন এবং কমপক্ষে ১০ সেকেন্ড সেই পেজে থাকুন, তারপর ফিরে আসুন।",
-    timerWarn: "১০ সেকেন্ডের আগে ফিরে আসা যাবে না",
-    adBtn: "বিজ্ঞাপন দেখুন ও ভিডিও আনলক করুন",
+    timerWarn: "⚠️ ১০ সেকেন্ডের আগে ফিরে আসলে ভিডিও পাঠানো হবে না এবং আবার শুরু করতে হবে।",
+    adBtn: "🎬 বিজ্ঞাপন দেখুন & ভিডিও আনলক করুন",
     waitLabel: "অপেক্ষা করুন...",
     tryAgain: "আবার চেষ্টা করুন",
     congrats: "অভিনন্দন! আপনার ভিডিও আনলক হয়েছে। নিচের বাটনগুলো থেকে ডাউনলোড বা ভিডিওটি দেখতে পারবেন।",
@@ -89,8 +91,8 @@ export const translations = {
     recentPosts: "সাম্প্রতিক পোস্ট",
     publish: "পোস্ট পাবলিশ করুন",
     addContent: "মুভি এড করুন",
-    success: "সফল হয়েছে!",
+    success: "সফল হয়েছে!",
     returnToBot: "🤖 বটে ফিরে যান",
-    returnMsg: "✅ ভিডিওটি আপনার ইনবক্সে পাঠানো হয়েছে।\n\nনিচের বাটনে একটি ক্লিক করুন এবং বটে ফিরে যান — আপনার ভিডিওটি ইনবক্সে চলে গেছে। 🎬"
+    returnMsg: "✅ ভিডিওটি আপনার ইনবক্সে পাঠানো হয়েছে।\n\nনিচের বাটনে একটি ক্লিক করুন এবং বটে ফিরে যান — আপনার ভিডিওটি ইনবক্সে চলে গেছে। 🎬"
   }
 };

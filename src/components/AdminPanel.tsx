@@ -112,7 +112,6 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
           category: 'Movie', 
           isPremium: false, 
           adLink: '', 
-          botLink: '',
           downloadLinks: [{ label: 'Download Server 1', url: '' }] 
         });
         fetchMovies();
@@ -128,7 +127,6 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
       description: movie.description,
       category: movie.category,
       adLink: movie.adLink,
-      botLink: movie.botLink || '',
       isPremium: movie.isPremium,
       downloadLinks: movie.downloadLinks || [{ label: 'Download Server 1', url: '' }]
     });
@@ -189,7 +187,6 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                   category: categories.find(c => c !== 'All') || 'Movie', 
                   isPremium: false, 
                   adLink: '', 
-                  botLink: '',
                   downloadLinks: [{ label: 'Download Server 1', url: '' }] 
                 });
               }
@@ -383,7 +380,6 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[10px] text-zinc-500 font-black uppercase px-2 py-0.5 rounded-lg bg-zinc-800">{movie.category}</span>
                   <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[80px]">{movie.adLink}</span>
-                  {movie.botLink && <span className="text-[10px] text-green-500 font-medium truncate max-w-[80px]">Link: {movie.botLink}</span>}
                 </div>
               </div>
               <div className="flex gap-2 pr-2">

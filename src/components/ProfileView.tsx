@@ -155,8 +155,6 @@ export default function ProfileView({
           <LinkButton icon={<Send className="h-4 w-4" />} label="Main Cha..." subLabel="অফিসিয়াল ..." color="bg-cyan-500" />
           <LinkButton icon={<Send className="h-4 w-4" />} label="Join Noti..." subLabel="মুভি রিকোয়ায়ে..." color="bg-blue-800" />
           <LinkButton icon={<Send className="h-4 w-4" />} label="Chat Gro..." subLabel="গ্রুপে চ্যাট ক..." color="bg-sky-500" />
-          <LinkButton icon={<Send className="h-4 w-4" />} label="🔞 18+ C..." subLabel="শুধুমাত্র ১৮+ ..." color="bg-red-600" />
-          <LinkButton icon={<Send className="h-4 w-4" />} label="🔞 Sax ..." subLabel="শুধুমাত্র ১৮+ ..." color="bg-red-500" />
           <div className="col-span-2">
             <LinkButton icon={<MessageSquare className="h-4 w-4" />} label="🔴 All C..." subLabel="সকল চ্যানেলে..." color="bg-cyan-600" fullWidth />
           </div>

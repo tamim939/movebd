@@ -28,8 +28,8 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
   }, [step, timeLeft]);
 
   const handleReturnToBot = () => {
-    // Priority: First target download link -> Bot Link -> Fallback
-    const targetLink = movie.downloadLinks?.[0]?.url || movie.botLink || "https://t.me/movebd_bot";
+    // Priority: First target download link -> Bot Link fallback
+    const targetLink = movie.downloadLinks?.[0]?.url || "https://t.me/movebd_bot";
     
     if (window.Telegram?.WebApp) {
       if (targetLink.includes('t.me')) {
@@ -105,21 +105,28 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
                 </div>
              </div>
 
-             <h2 className={`text-2xl font-black uppercase tracking-tight mb-2 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+             <h2 className={`text-3xl font-black italic tracking-tighter mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
                 {t.success}
              </h2>
 
-             <div className="mb-8 p-6 rounded-3xl bg-zinc-800/10 border border-white/5">
-                <p className={`text-sm font-medium leading-relaxed whitespace-pre-line ${theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'}`}>
-                   {t.returnMsg}
+             <div className="space-y-6 mb-10">
+                <div className={`p-5 rounded-3xl flex items-center gap-4 text-left ${theme === 'dark' ? 'bg-zinc-900 border border-white/5' : 'bg-green-50/50 border border-green-100'}`}>
+                   <span className="text-2xl">✅</span>
+                   <p className={`text-sm font-bold leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'}`}>
+                      {t.language === 'bn' ? 'ভিডিওটি আপনার ইনবক্সে পাঠানো হয়েছে।' : 'Your video has been sent to your inbox.'}
+                   </p>
+                </div>
+                
+                <p className={`text-xs font-bold leading-relaxed text-center px-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'}`}>
+                   {t.language === 'bn' ? 'নিচের বাটনে একটি ক্লিক করুন এবং বটে ফিরে যান — আপনার ভিডিওটি ইনবক্সে চলে গেছে। 🎬' : 'Click the button below to return to the bot — your video has been sent to your inbox. 🎬'}
                 </p>
              </div>
 
              <button 
                onClick={handleReturnToBot}
-               className="group flex w-full items-center justify-center gap-3 rounded-[24px] bg-[#00c853] py-5 text-sm font-black text-white shadow-xl shadow-green-500/30 active:scale-95 transition-all hover:bg-[#00e676]"
+               className="group flex w-full items-center justify-center gap-3 rounded-[20px] bg-[#31ce76] py-5 text-sm font-black text-white shadow-xl shadow-green-500/20 active:scale-95 transition-all"
              >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Bot className="h-5 w-5" />
                   <span>{t.returnToBot}</span>
                 </div>
@@ -150,32 +157,41 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
               <h2 className={`text-2xl font-black uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
                 {t.unlockTitle}
               </h2>
-              <p className={`mt-2 text-sm font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
-                {t.language === 'bn' ? 'মুভি ব্রাউজ' : 'Video Unlock Platform'}
+              <p className={`mt-1 text-sm font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
+                {(t as any).unlockSub}
               </p>
 
               <div className="mt-8 w-full space-y-6">
-                <div className={`flex items-center gap-3 rounded-2xl px-5 py-4 border transition-colors ${theme === 'dark' ? 'bg-zinc-900 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
-                  <Timer className="h-5 w-5 text-red-500" />
-                  <div className="text-left">
-                    <p className="text-[11px] font-bold leading-snug">
-                       <span className="text-red-500">{t.timerMsg}</span>
-                    </p>
-                    <p className={`text-[10px] font-medium leading-snug ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
-                       {t.timerMsgSub}
-                    </p>
+                <div className="text-center space-y-4">
+                  <div className="flex items-center justify-center gap-2 text-sm font-bold">
+                    <span>⏱️</span>
+                    <span className="text-red-500">{t.timerMsg}</span>
                   </div>
+                  <p className={`text-xs font-bold leading-relaxed ${theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    {t.timerMsgSub}
+                  </p>
                 </div>
 
-                <div className={`text-[10px] leading-relaxed font-medium ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
-                  {t.timerNote}
+                <div className={`rounded-3xl p-5 text-center transition-colors ${theme === 'dark' ? 'bg-zinc-900/50 border border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                  <p className={`text-xs font-bold leading-relaxed mb-3 ${theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'}`}>
+                    {t.language === 'bn' ? (
+                      <>নিচের বাটনে ক্লিক করুন এবং <span className="text-red-500 font-black">কমপক্ষে ১০ সেকেন্ড</span> সেই পেজে থাকুন, তারপর ফিরে আসুন।</>
+                    ) : (
+                      <>Click the button below and stay on the page for <span className="text-red-500 font-black">at least 10 seconds</span>, then come back.</>
+                    )}
+                  </p>
+                  <p className="text-[11px] font-black leading-relaxed flex items-center justify-center gap-1.5">
+                    <span className="text-yellow-500 decoration-none">⚠️</span>
+                    <span className="text-red-500">
+                      {t.language === 'bn' ? '১০ সেকেন্ডের আগে ফিরে আসলে ভিডিও পাঠানো হবে না এবং আবার শুরু করতে হবে।' : 'Do not return before 10 seconds or the video will not be sent.'}
+                    </span>
+                  </p>
                 </div>
 
                 <button
                   onClick={() => setStep('adbox')}
-                  className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 to-red-400 py-5 text-xs font-black text-white shadow-xl shadow-red-900/40 active:scale-95 transition-all"
+                  className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-[24px] bg-gradient-to-r from-red-600 to-red-400 py-6 text-sm font-black text-white shadow-2xl shadow-red-900/40 active:scale-95 transition-all"
                 >
-                  <Film className="h-5 w-5" />
                   {t.adBtn}
                 </button>
               </div>

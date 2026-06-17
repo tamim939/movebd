@@ -38,7 +38,7 @@ export default function App() {
     return (localStorage.getItem('app_theme') as 'light' | 'dark') || 'light';
   });
   const [lang, setLang] = useState<Language>(() => {
-    return (localStorage.getItem('app_lang') as Language) || 'en';
+    return (localStorage.getItem('app_lang') as Language) || 'bn';
   });
   const [categories, setCategories] = useState<string[]>([]);
 
@@ -81,12 +81,19 @@ export default function App() {
   useEffect(() => {
     // Monitor Movies from Firestore
     const q = query(collection(db, "movies"), orderBy("createdAt", "desc"));
+    const forbiddenCategories = ['18+', 'Sax', 'Adult', 'Sex', '18+ Movie', '18+ Series'];
     const unsubscribeMovies = onSnapshot(q, (snapshot) => {
       const moviesData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as any)
       })) as Movie[];
-      setMovies(moviesData);
+      
+      const filteredMovies = moviesData.filter(m => 
+        !forbiddenCategories.some(f => m.category.toLowerCase().includes(f.toLowerCase())) &&
+        !m.category.includes('🔞')
+      );
+      
+      setMovies(filteredMovies);
     });
 
     return () => unsubscribeMovies();
