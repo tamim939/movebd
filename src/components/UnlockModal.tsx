@@ -17,9 +17,9 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
   const [isTabActive, setIsTabActive] = useState(true);
   const [showCheatNotice, setShowCheatNotice] = useState(false);
 
-  // Rotation Logic: Each hour point changes the index
+  // Rotation Logic: Each 3-hour point changes the index
   const currentAdIndex = movie.adLinks?.length 
-    ? Math.floor(Date.now() / (1000 * 60 * 60)) % movie.adLinks.length 
+    ? Math.floor(Date.now() / (1000 * 60 * 60 * 3)) % movie.adLinks.length 
     : 0;
   
   const activeAdLink = movie.adLinks?.length 

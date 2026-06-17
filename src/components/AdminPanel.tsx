@@ -390,28 +390,28 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2 px-1">
-                  <label className="text-[10px] font-black text-zinc-500 uppercase">Rotating Ad Links (Hourly)</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Rotating Ad Links (3-Hour Slots)</label>
                   <button 
                     onClick={addAdLink}
                     className="text-[10px] font-black text-red-500 hover:text-red-400"
                   >
-                    + ADD AD LINK
+                    + ADD NEW SLOT
                   </button>
                 </div>
                 <div className="space-y-3">
                   {(newMovie.adLinks || ['']).map((link, i) => (
                     <div key={i} className="flex gap-2">
-                      <div className="flex-1 relative">
+                      <div className="flex-1 relative animate-in fade-in zoom-in-95 duration-300">
                         <LucideLink className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                         <input 
                           type="text" 
-                          placeholder={`Ad Link ${i + 1}...`}
+                          placeholder={`https://... (Slot ${i + 1})`}
                           className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
                           value={link || ''}
                           onChange={e => updateAdLink(i, e.target.value)}
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-zinc-600">
-                          HOUR #{i + 1}
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-zinc-600 uppercase">
+                          Slot {i + 1}
                         </div>
                       </div>
                       {(newMovie.adLinks?.length || 0) > 1 && (
@@ -427,16 +427,24 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Ad Timer Duration (Seconds)</label>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-widest">Unlock Wait Time (Seconds)</label>
                 <div className="relative">
                   <Play className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input 
                     type="number" 
-                    placeholder="10"
+                    placeholder="Enter seconds (e.g. 15)"
                     className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
-                    value={newMovie.timer || 10}
+                    value={newMovie.timer}
                     onChange={e => setNewMovie({...newMovie, timer: parseInt(e.target.value) || 0})}
                   />
+                  {newMovie.timer && (
+                    <button 
+                      onClick={() => setNewMovie({...newMovie, timer: 0})}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-red-500 uppercase hover:underline"
+                    >
+                      Clear
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-zinc-800/50 border border-white/5">
