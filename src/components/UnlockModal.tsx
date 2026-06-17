@@ -92,6 +92,14 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
             animate={{ scale: 1, opacity: 1 }}
             className={`relative w-full max-w-sm rounded-[44px] p-10 text-center shadow-3xl transition-colors duration-500 overflow-y-auto no-scrollbar max-h-[90vh] ${theme === 'dark' ? 'bg-zinc-950 border border-white/5 shadow-black' : 'bg-white shadow-2xl shadow-slate-200'}`}
           >
+             {/* Close Button for Success Screen */}
+             <button 
+                onClick={onClose}
+                className={`absolute top-6 right-6 p-2 rounded-full transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10 text-white/40' : 'bg-slate-100 hover:bg-slate-200 text-slate-400'}`}
+              >
+                <X className="h-5 w-5" />
+              </button>
+
              <div className="mb-6 flex justify-center">
                 <div className="relative">
                    <motion.div 
@@ -105,20 +113,20 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
                 </div>
              </div>
 
-             <h2 className={`text-3xl font-black italic tracking-tighter mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
-                {t.success}
+             <h2 className={`text-3xl font-black tracking-tighter mb-4 ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                সফল হয়েছে!
              </h2>
 
              <div className="space-y-6 mb-10">
                 <div className={`p-5 rounded-3xl flex items-center gap-4 text-left ${theme === 'dark' ? 'bg-zinc-900 border border-white/5' : 'bg-green-50/50 border border-green-100'}`}>
                    <span className="text-2xl">✅</span>
                    <p className={`text-sm font-bold leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'}`}>
-                      {t.language === 'bn' ? 'ভিডিওটি আপনার ইনবক্সে পাঠানো হয়েছে।' : 'Your video has been sent to your inbox.'}
+                      ভিডিওটি আপনার ইনবক্সে পাঠানো হয়েছে।
                    </p>
                 </div>
                 
                 <p className={`text-xs font-bold leading-relaxed text-center px-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'}`}>
-                   {t.language === 'bn' ? 'নিচের বাটনে একটি ক্লিক করুন এবং বটে ফিরে যান — আপনার ভিডিওটি ইনবক্সে চলে গেছে। 🎬' : 'Click the button below to return to the bot — your video has been sent to your inbox. 🎬'}
+                   নিচের বাটনে একটি ক্লিক করুন এবং বটে ফিরে যান — আপনার ভিডিওটি ইনবক্সে চলে গেছে। 🎬
                 </p>
              </div>
 
@@ -128,7 +136,7 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
              >
                 <div className="flex items-center gap-2">
                   <Bot className="h-5 w-5" />
-                  <span>{t.returnToBot}</span>
+                  <span>বটে ফিরে যান</span>
                 </div>
              </button>
           </motion.div>
@@ -155,35 +163,31 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
               </div>
 
               <h2 className={`text-2xl font-black uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
-                {t.unlockTitle}
+                Unlock Your Video
               </h2>
               <p className={`mt-1 text-sm font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
-                {(t as any).unlockSub}
+                ভিডিও আনলক করুন
               </p>
 
               <div className="mt-8 w-full space-y-6">
                 <div className="text-center space-y-4">
                   <div className="flex items-center justify-center gap-2 text-sm font-bold">
                     <span>⏱️</span>
-                    <span className="text-red-500">{t.timerMsg}</span>
+                    <span className="text-red-500">১০ সেকেন্ডের একটি বিজ্ঞাপন দেখতে হবে।</span>
                   </div>
                   <p className={`text-xs font-bold leading-relaxed ${theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'}`}>
-                    {t.timerMsgSub}
+                    যদি না দেখেন, আপনার কাঙ্ক্ষিত ভিডিও পাবেন না।
                   </p>
                 </div>
 
                 <div className={`rounded-3xl p-5 text-center transition-colors ${theme === 'dark' ? 'bg-zinc-900/50 border border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                   <p className={`text-xs font-bold leading-relaxed mb-3 ${theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'}`}>
-                    {t.language === 'bn' ? (
-                      <>নিচের বাটনে ক্লিক করুন এবং <span className="text-red-500 font-black">কমপক্ষে ১০ সেকেন্ড</span> সেই পেজে থাকুন, তারপর ফিরে আসুন।</>
-                    ) : (
-                      <>Click the button below and stay on the page for <span className="text-red-500 font-black">at least 10 seconds</span>, then come back.</>
-                    )}
+                    নিচের বাটনে ক্লিক করুন এবং <span className="text-red-500 font-black">কমপক্ষে ১০ সেকেন্ড</span> সেই পেজে থাকুন, তারপর ফিরে আসুন।
                   </p>
                   <p className="text-[11px] font-black leading-relaxed flex items-center justify-center gap-1.5">
                     <span className="text-yellow-500 decoration-none">⚠️</span>
                     <span className="text-red-500">
-                      {t.language === 'bn' ? '১০ সেকেন্ডের আগে ফিরে আসলে ভিডিও পাঠানো হবে না এবং আবার শুরু করতে হবে।' : 'Do not return before 10 seconds or the video will not be sent.'}
+                      ১০ সেকেন্ডের আগে ফিরে আসলে ভিডিও পাঠানো হবে না এবং আবার শুরু করতে হবে।
                     </span>
                   </p>
                 </div>
@@ -192,7 +196,7 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
                   onClick={() => setStep('adbox')}
                   className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-[24px] bg-gradient-to-r from-red-600 to-red-400 py-6 text-sm font-black text-white shadow-2xl shadow-red-900/40 active:scale-95 transition-all"
                 >
-                  {t.adBtn}
+                  🎬 বিজ্ঞাপন দেখুন & ভিডিও আনলক করুন
                 </button>
               </div>
             </div>
