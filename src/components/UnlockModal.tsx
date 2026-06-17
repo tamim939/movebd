@@ -17,6 +17,15 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
   const [isTabActive, setIsTabActive] = useState(true);
   const [showCheatNotice, setShowCheatNotice] = useState(false);
 
+  // Rotation Logic: Each hour point changes the index
+  const currentAdIndex = movie.adLinks?.length 
+    ? Math.floor(Date.now() / (1000 * 60 * 60)) % movie.adLinks.length 
+    : 0;
+  
+  const activeAdLink = movie.adLinks?.length 
+    ? movie.adLinks[currentAdIndex] 
+    : movie.adLink;
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       const active = document.visibilityState === 'visible';
@@ -103,9 +112,9 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
 
              <div className="flex-1 bg-black relative">
                 <iframe 
-                  src={movie.adLink}
-                  className="h-full w-full border-none"
-                  title="Sponsored Content"
+                   src={activeAdLink}
+                   className="h-full w-full border-none"
+                   title="Sponsored Content"
                 />
              </div>
 

@@ -27,6 +27,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
     category: categories.find(c => c !== 'All') || 'Movie',
     isPremium: false,
     adLink: '',
+    adLinks: [''],
     timer: 10,
     downloadLinks: [{ label: 'Download Server 1', url: '' }]
   });
@@ -138,20 +139,27 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
   };
 
   const handleAdd = async () => {
-    if (!newMovie.title || !newMovie.thumbnail || !newMovie.adLink) {
+    // Sync single adLink with first rotating link for compatibility
+    const mainAdLink = newMovie.adLinks?.[0] || newMovie.adLink;
+    if (!newMovie.title || !newMovie.thumbnail || !mainAdLink) {
       alert("Please fill in all required fields (Title, Thumbnail, Ad Link)");
       return;
     }
     
+    const movieData = {
+      ...newMovie,
+      adLink: mainAdLink,
+    };
+    
     try {
       if (editingId) {
           await updateDoc(doc(db, "movies", editingId), {
-            ...newMovie,
+            ...movieData,
             updatedAt: serverTimestamp()
           });
         } else {
           await addDoc(collection(db, "movies"), {
-            ...newMovie,
+            ...movieData,
             createdAt: serverTimestamp()
           });
         }
@@ -161,6 +169,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
           category: 'Movie', 
           isPremium: false, 
           adLink: '', 
+          adLinks: [''],
           timer: 10,
           downloadLinks: [{ label: 'Download Server 1', url: '' }] 
         });
@@ -177,12 +186,34 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
       description: movie.description,
       category: movie.category,
       adLink: movie.adLink,
+      adLinks: movie.adLinks || [movie.adLink],
       timer: movie.timer || 10,
       isPremium: movie.isPremium,
       downloadLinks: movie.downloadLinks || [{ label: 'Download Server 1', url: '' }]
     });
     setEditingId(movie.id);
     setIsAdding(true);
+  };
+
+  const updateAdLink = (index: number, value: string) => {
+    const links = [...(newMovie.adLinks || [''])];
+    links[index] = value;
+    setNewMovie({ ...newMovie, adLinks: links });
+  };
+
+  const addAdLink = () => {
+    if ((newMovie.adLinks?.length || 0) >= 10) {
+      alert("Maximum 10 ad links allowed");
+      return;
+    }
+    setNewMovie({ ...newMovie, adLinks: [...(newMovie.adLinks || ['']), ''] });
+  };
+
+  const removeAdLink = (index: number) => {
+    if ((newMovie.adLinks?.length || 0) <= 1) return;
+    const links = [...(newMovie.adLinks || [])];
+    links.splice(index, 1);
+    setNewMovie({ ...newMovie, adLinks: links });
   };
 
   const handleDelete = async (id: string) => {
@@ -358,16 +389,41 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Redirect/Ad Link (Dynamic Timer)</label>
-                <div className="relative">
-                  <LucideLink className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                  <input 
-                    type="text" 
-                    placeholder="https://tvprobd.vercel.app"
-                    className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
-                    value={newMovie.adLink || ''}
-                    onChange={e => setNewMovie({...newMovie, adLink: e.target.value})}
-                  />
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <label className="text-[10px] font-black text-zinc-500 uppercase">Rotating Ad Links (Hourly)</label>
+                  <button 
+                    onClick={addAdLink}
+                    className="text-[10px] font-black text-red-500 hover:text-red-400"
+                  >
+                    + ADD AD LINK
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {(newMovie.adLinks || ['']).map((link, i) => (
+                    <div key={i} className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <LucideLink className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                        <input 
+                          type="text" 
+                          placeholder={`Ad Link ${i + 1}...`}
+                          className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
+                          value={link || ''}
+                          onChange={e => updateAdLink(i, e.target.value)}
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-zinc-600">
+                          HOUR #{i + 1}
+                        </div>
+                      </div>
+                      {(newMovie.adLinks?.length || 0) > 1 && (
+                        <button 
+                          onClick={() => removeAdLink(i)}
+                          className="rounded-2xl bg-red-600/10 px-4 text-red-500 hover:bg-red-600 hover:text-white transition-all shadow-xl"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
               <div>

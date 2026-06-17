@@ -11,6 +11,7 @@ export interface Movie {
   category: string;
   isPremium: boolean;
   adLink: string;
+  adLinks?: string[]; // Array of rotating ad links
   timer?: number; // Optional ad timer in seconds
   downloadLinks: DownloadLink[];
   createdAt: any;
