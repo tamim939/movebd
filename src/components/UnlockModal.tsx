@@ -155,37 +155,28 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
                 সফল হয়েছে!
              </h2>
 
-             <div className="space-y-3 mb-10 w-full">
-                {movie.downloadLinks?.map((link, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleReturnToBot(link.url)}
-                    className={`group flex w-full items-center justify-between gap-3 rounded-[24px] p-5 text-sm font-black transition-all active:scale-95 border ${theme === 'dark' ? 'bg-zinc-900 border-white/5 text-white hover:bg-zinc-800' : 'bg-slate-50 border-slate-100 text-slate-800 hover:bg-slate-100'}`}
-                  >
-                     <span className="uppercase tracking-widest">{link.label}</span>
-                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/10 text-green-500">
-                        <Bot className="h-4 w-4" />
-                     </div>
-                  </button>
-                ))}
+             <div className="space-y-6 mb-10">
+                <div className={`p-5 rounded-3xl flex items-center gap-4 text-left ${theme === 'dark' ? 'bg-zinc-900 border border-white/5' : 'bg-green-50/50 border border-green-100'}`}>
+                   <span className="text-2xl">✅</span>
+                   <p className={`text-sm font-bold leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'}`}>
+                      ভিডিওটি আপনার ইনবক্সে পাঠানো হয়েছে।
+                   </p>
+                </div>
                 
-                {!movie.downloadLinks?.length && (
-                   <button
-                    onClick={() => handleReturnToBot()}
-                    className="group flex w-full items-center justify-center gap-3 rounded-[24px] bg-[#31ce76] py-5 text-sm font-black text-white shadow-xl shadow-green-500/20 active:scale-95 transition-all"
-                  >
-                     <Bot className="h-5 w-5" />
-                     <span>বটে ফিরে যান</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={onClose}
-                  className="mt-6 text-[10px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-colors block w-full text-center"
-                >
-                  হোমপেজে ফিরে যান
-                </button>
+                <p className={`text-xs font-bold leading-relaxed text-center px-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-500'}`}>
+                   নিচের বাটনে একটি ক্লিক করুন এবং বটে ফিরে যান — আপনার ভিডিওটি ইনবক্সে চলে গেছে। 🎬
+                </p>
              </div>
+
+             <button 
+               onClick={() => handleReturnToBot()}
+               className="group flex w-full items-center justify-center gap-3 rounded-[20px] bg-[#31ce76] py-5 text-sm font-black text-white shadow-xl shadow-green-500/20 active:scale-95 transition-all"
+             >
+                <div className="flex items-center gap-2">
+                   <Bot className="h-5 w-5" />
+                   <span>বটে ফিরে যান</span>
+                </div>
+             </button>
           </motion.div>
         ) : (
           <motion.div
