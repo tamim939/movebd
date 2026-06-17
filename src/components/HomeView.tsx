@@ -4,12 +4,12 @@ import CategoryBar from './CategoryBar';
 import Carousel from './Carousel';
 import MovieCard from './MovieCard';
 import UnlockModal from './UnlockModal';
-import { Category, Movie } from '../types';
+import { Category, Movie, Banner } from '../types';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { AnimatePresence } from 'motion/react';
 
-export default function HomeView({ user, movies, loading, favorites, onToggleFavorite, onMovieClick, t, theme, categories }: { user: any, movies: Movie[], loading: boolean, favorites: string[], onToggleFavorite: (id: string) => void, onMovieClick: (movie: Movie) => void, t: any, theme: string, categories: string[] }) {
+export default function HomeView({ user, movies, banners, loading, favorites, onToggleFavorite, onMovieClick, t, theme, categories }: { user: any, movies: Movie[], banners: Banner[], loading: boolean, favorites: string[], onToggleFavorite: (id: string) => void, onMovieClick: (movie: Movie) => void, t: any, theme: string, categories: string[] }) {
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const filteredMovies = activeCategory === 'All' 
@@ -55,7 +55,7 @@ export default function HomeView({ user, movies, loading, favorites, onToggleFav
         {loading ? (
           <div className={`h-48 w-full animate-pulse rounded-3xl mt-2 ${theme === 'dark' ? 'bg-zinc-900' : 'bg-slate-100'}`} />
         ) : (
-          <Carousel movies={movies.slice(0, 5)} theme={theme} t={t} />
+          <Carousel banners={banners} theme={theme} t={t} />
         )}
       </div>
 

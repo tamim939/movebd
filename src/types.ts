@@ -11,8 +11,16 @@ export interface Movie {
   category: string;
   isPremium: boolean;
   adLink: string;
-  botLink?: string;
+  timer?: number; // Optional ad timer in seconds
   downloadLinks: DownloadLink[];
+  createdAt: any;
+}
+
+export interface Banner {
+  id: string;
+  title: string;
+  imageUrl: string;
+  link: string;
   createdAt: any;
 }
 

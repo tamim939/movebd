@@ -16,7 +16,7 @@ import { auth } from './lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import MovieCard from './components/MovieCard';
 import UnlockModal from './components/UnlockModal';
-import { Movie } from './types';
+import { Movie, Banner } from './types';
 import { db } from './lib/firebase';
 import { collection, query, orderBy, onSnapshot, doc } from 'firebase/firestore';
 import { translations, Language } from './translations';
@@ -27,6 +27,7 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [isAdmin, setIsAdmin] = useState(() => {
     return localStorage.getItem('is_admin_active') === 'true';
   });
@@ -97,6 +98,20 @@ export default function App() {
     });
 
     return () => unsubscribeMovies();
+  }, []);
+
+  useEffect(() => {
+    // Monitor Banners from Firestore
+    const q = query(collection(db, "banners"), orderBy("createdAt", "desc"));
+    const unsubscribeBanners = onSnapshot(q, (snapshot) => {
+      const bannersData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...(doc.data() as any)
+      })) as Banner[];
+      setBanners(bannersData);
+    });
+
+    return () => unsubscribeBanners();
   }, []);
 
   useEffect(() => {
@@ -200,6 +215,7 @@ export default function App() {
                 <HomeView 
                   user={user} 
                   movies={movies}
+                  banners={banners}
                   loading={movies.length === 0}
                   favorites={favorites}
                   onToggleFavorite={toggleFavorite}

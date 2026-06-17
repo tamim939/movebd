@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Lock, X, Timer, ExternalLink, Download, AlertTriangle, Film, CheckCircle2, ChevronLeft, Bot } from 'lucide-react';
+import { Lock, X, Timer, CheckCircle2, Bot } from 'lucide-react';
 import { Movie } from '../types';
 
 interface UnlockModalProps {
@@ -13,22 +13,52 @@ interface UnlockModalProps {
 
 export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockModalProps) {
   const [step, setStep] = useState<'intro' | 'adbox' | 'success'>('intro');
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(movie.timer || 10);
+  const [isTabActive, setIsTabActive] = useState(true);
+  const [showCheatNotice, setShowCheatNotice] = useState(false);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const active = document.visibilityState === 'visible';
+      setIsTabActive(active);
+      
+      if (!active && step === 'adbox') {
+        // User left the ad screen
+        handleCheatDetected();
+      }
+    };
+
+    window.addEventListener('blur', () => {
+      if (step === 'adbox') handleCheatDetected();
+    });
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', () => {});
+    };
+  }, [step, movie.timer]);
+
+  const handleCheatDetected = () => {
+    setShowCheatNotice(true);
+    setStep('intro');
+    setTimeLeft(movie.timer || 10);
+  };
 
   useEffect(() => {
     let timer: any;
-    if (step === 'adbox' && timeLeft > 0) {
+    if (step === 'adbox' && timeLeft > 0 && isTabActive) {
       timer = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0 && step === 'adbox') {
+    } else if (timeLeft <= 0 && step === 'adbox') {
       setStep('success');
     }
     return () => clearInterval(timer);
-  }, [step, timeLeft]);
+  }, [step, timeLeft, isTabActive]);
 
   const handleReturnToBot = () => {
-    // Priority: First target download link -> Bot Link fallback
+    // Priority: First target download link -> Telegram Bot fallback
     const targetLink = movie.downloadLinks?.[0]?.url || "https://t.me/movebd_bot";
     
     if (window.Telegram?.WebApp) {
@@ -44,12 +74,7 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md"
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md">
       <AnimatePresence mode="wait">
         {step === 'adbox' ? (
           <motion.div 
@@ -61,8 +86,13 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
           >
              <div className="flex items-center justify-between p-4 border-b border-white/5">
                 <div className="flex items-center gap-2">
-                   <div className="h-6 w-6 rounded-full bg-red-600 flex items-center justify-center text-[10px] font-bold text-white">Ad</div>
-                   <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{timeLeft > 0 ? t.waitLabel : 'Finished'}</span>
+                   <button 
+                     onClick={handleCheatDetected}
+                     className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center text-white hover:bg-zinc-700 transition-colors"
+                   >
+                     <X className="h-4 w-4" />
+                   </button>
+                   <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{timeLeft > 0 ? 'অপেক্ষা করুন' : 'শেষ'}</span>
                 </div>
                 <div className="flex items-center gap-3">
                    <div className="flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1 text-[11px] font-black text-white">
@@ -81,7 +111,7 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
 
              <div className="p-4 bg-zinc-900 border-t border-white/5 text-center">
                 <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-none">
-                   Do not close this window until the timer ends
+                   বিজ্ঞাপন শেষ না হওয়া পর্যন্ত এই ট্যাবটি বন্ধ করবেন না
                 </p>
              </div>
           </motion.div>
@@ -92,7 +122,6 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
             animate={{ scale: 1, opacity: 1 }}
             className={`relative w-full max-w-sm rounded-[44px] p-10 text-center shadow-3xl transition-colors duration-500 overflow-y-auto no-scrollbar max-h-[90vh] ${theme === 'dark' ? 'bg-zinc-950 border border-white/5 shadow-black' : 'bg-white shadow-2xl shadow-slate-200'}`}
           >
-             {/* Close Button for Success Screen */}
              <button 
                 onClick={onClose}
                 className={`absolute top-6 right-6 p-2 rounded-full transition-colors ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10 text-white/40' : 'bg-slate-100 hover:bg-slate-200 text-slate-400'}`}
@@ -135,8 +164,8 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
                className="group flex w-full items-center justify-center gap-3 rounded-[20px] bg-[#31ce76] py-5 text-sm font-black text-white shadow-xl shadow-green-500/20 active:scale-95 transition-all"
              >
                 <div className="flex items-center gap-2">
-                  <Bot className="h-5 w-5" />
-                  <span>বটে ফিরে যান</span>
+                   <Bot className="h-5 w-5" />
+                   <span>বটে ফিরে যান</span>
                 </div>
              </button>
           </motion.div>
@@ -162,38 +191,53 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
                 </div>
               </div>
 
+              {showCheatNotice && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 w-full rounded-2xl bg-red-600/10 border border-red-500/20 p-3"
+                >
+                  <p className="text-[11px] font-black text-red-500 uppercase tracking-tight leading-relaxed">
+                    আপনি ফুল বিজ্ঞাপন দেখেননি! <br/> আবার নতুন করে বিজ্ঞাপন দেখুন।
+                  </p>
+                </motion.div>
+              )}
+
               <h2 className={`text-2xl font-black uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
-                Unlock Your Video
+                ভিডিও আনলক করুন
               </h2>
               <p className={`mt-1 text-sm font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`}>
-                ভিডিও আনলক করুন
+                Video Unlock Platform
               </p>
 
               <div className="mt-8 w-full space-y-6">
                 <div className="text-center space-y-4">
                   <div className="flex items-center justify-center gap-2 text-sm font-bold">
                     <span>⏱️</span>
-                    <span className="text-red-500">১০ সেকেন্ডের একটি বিজ্ঞাপন দেখতে হবে।</span>
+                    <span className="text-red-500">আপনাকে {movie.timer || 10} সেকেন্ডের একটি বিজ্ঞাপন দেখতে হবে।</span>
                   </div>
                   <p className={`text-xs font-bold leading-relaxed ${theme === 'dark' ? 'text-zinc-400' : 'text-slate-600'}`}>
-                    যদি না দেখেন, আপনার কাঙ্ক্ষিত ভিডিও পাবেন না।
+                    যদি বিজ্ঞাপন না দেখেন, তবে আপনি ভিডিওটি পাবেন না।
                   </p>
                 </div>
 
                 <div className={`rounded-3xl p-5 text-center transition-colors ${theme === 'dark' ? 'bg-zinc-900/50 border border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                   <p className={`text-xs font-bold leading-relaxed mb-3 ${theme === 'dark' ? 'text-zinc-300' : 'text-slate-700'}`}>
-                    নিচের বাটনে ক্লিক করুন এবং <span className="text-red-500 font-black">কমপক্ষে ১০ সেকেন্ড</span> সেই পেজে থাকুন, তারপর ফিরে আসুন।
+                    নিচের বাটনে ক্লিক করুন এবং <span className="text-red-500 font-black">কমপক্ষে {movie.timer || 10} সেকেন্ড</span> সেই পেজে থাকুন, তারপর ফিরে আসুন।
                   </p>
                   <p className="text-[11px] font-black leading-relaxed flex items-center justify-center gap-1.5">
                     <span className="text-yellow-500 decoration-none">⚠️</span>
                     <span className="text-red-500">
-                      ১০ সেকেন্ডের আগে ফিরে আসলে ভিডিও পাঠানো হবে না এবং আবার শুরু করতে হবে।
+                      {movie.timer || 10} সেকেন্ডের আগে ফিরে আসলে ভিডিও পাঠানো হবে না।
                     </span>
                   </p>
                 </div>
 
                 <button
-                  onClick={() => setStep('adbox')}
+                  onClick={() => {
+                    setStep('adbox');
+                    setShowCheatNotice(false);
+                  }}
                   className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-[24px] bg-gradient-to-r from-red-600 to-red-400 py-6 text-sm font-black text-white shadow-2xl shadow-red-900/40 active:scale-95 transition-all"
                 >
                   🎬 বিজ্ঞাপন দেখুন & ভিডিও আনলক করুন
@@ -203,6 +247,6 @@ export default function UnlockModal({ movie, onClose, t, theme, user }: UnlockMo
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }

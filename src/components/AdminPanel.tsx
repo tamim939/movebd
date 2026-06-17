@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Trash2, Edit2, Link as LucideLink, Play, Save, X, PlusCircle, Bot } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Movie, Category, DownloadLink } from '../types';
+import { Movie, Category, DownloadLink, Banner } from '../types';
 import { db } from '../lib/firebase';
 import { 
   collection, 
@@ -17,16 +17,24 @@ import {
 
 export default function AdminPanel({ categories }: { categories: string[] }) {
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [isManagingCategories, setIsManagingCategories] = useState(false);
+  const [isManagingBanners, setIsManagingBanners] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newMovie, setNewMovie] = useState<Partial<Movie>>({
     category: categories.find(c => c !== 'All') || 'Movie',
     isPremium: false,
     adLink: '',
+    timer: 10,
     downloadLinks: [{ label: 'Download Server 1', url: '' }]
+  });
+  const [newBanner, setNewBanner] = useState<Partial<Banner>>({
+    title: '',
+    imageUrl: '',
+    link: ''
   });
 
   const fetchMovies = async () => {
@@ -46,9 +54,51 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
     }
   };
 
+  const fetchBanners = async () => {
+    try {
+      const q = query(collection(db, "banners"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      const bannersData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Banner[];
+      setBanners(bannersData);
+    } catch (e) {
+      console.error("Error fetching banners:", e);
+    }
+  };
+
   useEffect(() => {
     fetchMovies();
+    fetchBanners();
   }, []);
+
+  const handleAddBanner = async () => {
+    if (!newBanner.title || !newBanner.imageUrl || !newBanner.link) {
+      alert("Please fill in all banner fields");
+      return;
+    }
+    try {
+      await addDoc(collection(db, "banners"), {
+        ...newBanner,
+        createdAt: serverTimestamp()
+      });
+      setNewBanner({ title: '', imageUrl: '', link: '' });
+      fetchBanners();
+    } catch (e) {
+      console.error("Error adding banner:", e);
+    }
+  };
+
+  const handleDeleteBanner = async (id: string) => {
+    if (!window.confirm("Delete this banner?")) return;
+    try {
+      await deleteDoc(doc(db, "banners", id));
+      fetchBanners();
+    } catch (e) {
+      console.error("Error deleting banner:", e);
+    }
+  };
 
   const handleAddCategory = async () => {
     if (!newCategory.trim()) return;
@@ -112,6 +162,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
           category: 'Movie', 
           isPremium: false, 
           adLink: '', 
+          timer: 10,
           downloadLinks: [{ label: 'Download Server 1', url: '' }] 
         });
         fetchMovies();
@@ -127,6 +178,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
       description: movie.description,
       category: movie.category,
       adLink: movie.adLink,
+      timer: movie.timer || 10,
       isPremium: movie.isPremium,
       downloadLinks: movie.downloadLinks || [{ label: 'Download Server 1', url: '' }]
     });
@@ -173,7 +225,22 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
         </div>
         <div className="flex gap-2">
           <button 
-            onClick={() => setIsManagingCategories(!isManagingCategories)}
+            onClick={() => {
+              setIsManagingBanners(!isManagingBanners);
+              setIsManagingCategories(false);
+              setIsAdding(false);
+            }}
+            className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-black shadow-xl active:scale-95 transition-all ${isManagingBanners ? 'bg-zinc-800 text-white' : 'bg-red-600/10 text-red-500'}`}
+          >
+            {isManagingBanners ? <X className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {isManagingBanners ? 'CLOSE' : 'BANNERS'}
+          </button>
+          <button 
+            onClick={() => {
+              setIsManagingCategories(!isManagingCategories);
+              setIsManagingBanners(false);
+              setIsAdding(false);
+            }}
             className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-black shadow-xl active:scale-95 transition-all ${isManagingCategories ? 'bg-zinc-800 text-white' : 'bg-red-600/10 text-red-500'}`}
           >
             {isManagingCategories ? <X className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
@@ -192,6 +259,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
               }
               setIsAdding(!isAdding);
               setIsManagingCategories(false);
+              setIsManagingBanners(false);
             }}
             className="flex items-center gap-2 rounded-2xl bg-red-600 px-6 py-3 text-sm font-black shadow-xl shadow-red-900/40 active:scale-95 transition-all"
           >
@@ -200,6 +268,59 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
           </button>
         </div>
       </div>
+
+      {isManagingBanners && (
+        <div className="mb-8 space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
+           <h3 className="text-sm font-black text-red-600 uppercase tracking-widest">Manage Home Banners</h3>
+           
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+             <input 
+               type="text" 
+               placeholder="Banner Title..."
+               className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none"
+               value={newBanner.title}
+               onChange={e => setNewBanner({...newBanner, title: e.target.value})}
+             />
+             <input 
+               type="text" 
+               placeholder="Image URL..."
+               className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none"
+               value={newBanner.imageUrl}
+               onChange={e => setNewBanner({...newBanner, imageUrl: e.target.value})}
+             />
+             <input 
+               type="text" 
+               placeholder="Link..."
+               className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none"
+               value={newBanner.link}
+               onChange={e => setNewBanner({...newBanner, link: e.target.value})}
+             />
+             <button 
+               onClick={handleAddBanner}
+               className="md:col-span-3 rounded-xl bg-red-600 px-6 py-3 text-xs font-black uppercase"
+             >
+               Add Banner
+             </button>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+             {banners.map(banner => (
+               <div key={banner.id} className="relative group rounded-2xl overflow-hidden aspect-[16/9] border border-white/5">
+                 <img src={banner.imageUrl} alt="" className="h-full w-full object-cover" />
+                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
+                    <p className="text-[10px] font-black uppercase text-white mb-2 text-center">{banner.title}</p>
+                    <button 
+                      onClick={() => handleDeleteBanner(banner.id)}
+                      className="rounded-full bg-red-600 p-2 text-white hover:bg-red-500"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                 </div>
+               </div>
+             ))}
+           </div>
+        </div>
+      )}
 
       {isManagingCategories && (
         <div className="mb-8 space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
@@ -288,7 +409,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Redirect/Ad Link (10s Timer)</label>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Redirect/Ad Link (Dynamic Timer)</label>
                 <div className="relative">
                   <LucideLink className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input 
@@ -297,6 +418,19 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                     className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
                     value={newMovie.adLink || ''}
                     onChange={e => setNewMovie({...newMovie, adLink: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1">Ad Timer Duration (Seconds)</label>
+                <div className="relative">
+                  <Play className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input 
+                    type="number" 
+                    placeholder="10"
+                    className="w-full rounded-2xl bg-zinc-800 py-4 pr-5 pl-12 text-sm text-white focus:outline-none focus:ring-2 focus:ring-red-600 border border-white/5"
+                    value={newMovie.timer || 10}
+                    onChange={e => setNewMovie({...newMovie, timer: parseInt(e.target.value) || 0})}
                   />
                 </div>
               </div>
@@ -380,6 +514,7 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[10px] text-zinc-500 font-black uppercase px-2 py-0.5 rounded-lg bg-zinc-800">{movie.category}</span>
                   <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[80px]">{movie.adLink}</span>
+                  <span className="text-[10px] text-red-400 font-black px-2 py-0.5 rounded-lg bg-red-500/10 border border-red-500/20">{movie.timer || 10}s</span>
                 </div>
               </div>
               <div className="flex gap-2 pr-2">
