@@ -19,9 +19,8 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'content' | 'banners' | 'categories'>('content');
   const [isAdding, setIsAdding] = useState(false);
-  const [isManagingCategories, setIsManagingCategories] = useState(false);
-  const [isManagingBanners, setIsManagingBanners] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newMovie, setNewMovie] = useState<Partial<Movie>>({
@@ -218,34 +217,29 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
 
   return (
     <div className="p-6 pb-32 min-h-screen bg-zinc-950 text-white">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-3xl font-black italic tracking-tighter">ADMIN <span className="text-red-600">DASHBOARD</span></h2>
-          <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Manage Content & Links</p>
+      <div className="flex items-center justify-between mb-10 overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="flex gap-2 p-1 bg-zinc-900/50 rounded-2xl border border-white/5">
+          <button 
+            onClick={() => { setActiveTab('content'); setIsAdding(false); }}
+            className={`rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'content' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-zinc-500 hover:text-white'}`}
+          >
+            CONTENT
+          </button>
+          <button 
+            onClick={() => { setActiveTab('banners'); setIsAdding(false); }}
+            className={`rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'banners' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-zinc-500 hover:text-white'}`}
+          >
+            BANNERS
+          </button>
+          <button 
+            onClick={() => { setActiveTab('categories'); setIsAdding(false); }}
+            className={`rounded-xl px-5 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'categories' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-zinc-500 hover:text-white'}`}
+          >
+            CATEGORIES
+          </button>
         </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => {
-              setIsManagingBanners(!isManagingBanners);
-              setIsManagingCategories(false);
-              setIsAdding(false);
-            }}
-            className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-black shadow-xl active:scale-95 transition-all ${isManagingBanners ? 'bg-zinc-800 text-white' : 'bg-red-600/10 text-red-500'}`}
-          >
-            {isManagingBanners ? <X className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            {isManagingBanners ? 'CLOSE' : 'BANNERS'}
-          </button>
-          <button 
-            onClick={() => {
-              setIsManagingCategories(!isManagingCategories);
-              setIsManagingBanners(false);
-              setIsAdding(false);
-            }}
-            className={`flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-black shadow-xl active:scale-95 transition-all ${isManagingCategories ? 'bg-zinc-800 text-white' : 'bg-red-600/10 text-red-500'}`}
-          >
-            {isManagingCategories ? <X className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
-            {isManagingCategories ? 'CLOSE' : 'CATEGORIES'}
-          </button>
+        
+        {activeTab === 'content' && (
           <button 
             onClick={() => {
               if (isAdding) {
@@ -258,63 +252,34 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
                 });
               }
               setIsAdding(!isAdding);
-              setIsManagingCategories(false);
-              setIsManagingBanners(false);
             }}
             className="flex items-center gap-2 rounded-2xl bg-red-600 px-6 py-3 text-sm font-black shadow-xl shadow-red-900/40 active:scale-95 transition-all"
           >
             {isAdding ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {isAdding ? 'CANCEL' : 'ADD CONTENT'}
+            {isAdding ? 'CANCEL' : 'ADD NEW'}
           </button>
-        </div>
+        )}
       </div>
 
-      {isManagingBanners && (
-        <div className="mb-8 space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
-           <h3 className="text-sm font-black text-red-600 uppercase tracking-widest">Manage Home Banners</h3>
-           
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-             <input 
-               type="text" 
-               placeholder="Banner Title..."
-               className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none"
-               value={newBanner.title}
-               onChange={e => setNewBanner({...newBanner, title: e.target.value})}
-             />
-             <input 
-               type="text" 
-               placeholder="Image URL..."
-               className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none"
-               value={newBanner.imageUrl}
-               onChange={e => setNewBanner({...newBanner, imageUrl: e.target.value})}
-             />
-             <input 
-               type="text" 
-               placeholder="Link..."
-               className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none"
-               value={newBanner.link}
-               onChange={e => setNewBanner({...newBanner, link: e.target.value})}
-             />
-             <button 
-               onClick={handleAddBanner}
-               className="md:col-span-3 rounded-xl bg-red-600 px-6 py-3 text-xs font-black uppercase"
-             >
-               Add Banner
-             </button>
+      {activeTab === 'banners' && (
+        <div className="mb-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           <div className="space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
+             <h3 className="text-sm font-black text-red-600 uppercase tracking-widest">Home Slider Banners</h3>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+               <input type="text" placeholder="Banner Title..." className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none" value={newBanner.title} onChange={e => setNewBanner({...newBanner, title: e.target.value})} />
+               <input type="text" placeholder="Image URL..." className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none" value={newBanner.imageUrl} onChange={e => setNewBanner({...newBanner, imageUrl: e.target.value})} />
+               <input type="text" placeholder="Link..." className="rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none" value={newBanner.link} onChange={e => setNewBanner({...newBanner, link: e.target.value})} />
+               <button onClick={handleAddBanner} className="md:col-span-3 rounded-xl bg-red-600 px-6 py-3 text-xs font-black uppercase">Add Banner</button>
+             </div>
            </div>
 
-           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
              {banners.map(banner => (
                <div key={banner.id} className="relative group rounded-2xl overflow-hidden aspect-[16/9] border border-white/5">
                  <img src={banner.imageUrl} alt="" className="h-full w-full object-cover" />
                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
                     <p className="text-[10px] font-black uppercase text-white mb-2 text-center">{banner.title}</p>
-                    <button 
-                      onClick={() => handleDeleteBanner(banner.id)}
-                      className="rounded-full bg-red-600 p-2 text-white hover:bg-red-500"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <button onClick={() => handleDeleteBanner(banner.id)} className="rounded-full bg-red-600 p-2 text-white hover:bg-red-500"><Trash2 className="h-4 w-4" /></button>
                  </div>
                </div>
              ))}
@@ -322,45 +287,29 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
         </div>
       )}
 
-      {isManagingCategories && (
-        <div className="mb-8 space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
-           <h3 className="text-sm font-black text-red-600 uppercase tracking-widest">Manage Categories</h3>
-           
-           <div className="flex gap-2">
-             <input 
-               type="text" 
-               placeholder="New Category Name..."
-               className="flex-1 rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-red-600"
-               value={newCategory}
-               onChange={e => setNewCategory(e.target.value)}
-             />
-             <button 
-               onClick={handleAddCategory}
-               className="rounded-xl bg-red-600 px-6 py-3 text-xs font-black uppercase"
-             >
-               Add
-             </button>
-           </div>
-
-           <div className="flex flex-wrap gap-2 mt-4">
-             {categories.map(cat => (
-               <div key={cat} className="flex items-center gap-2 rounded-full bg-zinc-800 px-4 py-2 border border-white/5 group">
-                 <span className="text-[10px] font-black uppercase text-zinc-400">{cat}</span>
-                 {cat !== 'All' && (
-                   <button 
-                     onClick={() => handleDeleteCategory(cat)}
-                     className="text-zinc-600 hover:text-red-500 transition-colors"
-                   >
-                     <X className="h-3 w-3" />
-                   </button>
-                 )}
-               </div>
-             ))}
+      {activeTab === 'categories' && (
+        <div className="mb-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           <div className="space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
+             <h3 className="text-sm font-black text-red-600 uppercase tracking-widest">Navigation Categories</h3>
+             <div className="flex gap-2">
+               <input type="text" placeholder="New Category Name..." className="flex-1 rounded-xl bg-zinc-800 px-4 py-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-red-600" value={newCategory} onChange={e => setNewCategory(e.target.value)} />
+               <button onClick={handleAddCategory} className="rounded-xl bg-red-600 px-6 py-3 text-xs font-black uppercase">Add</button>
+             </div>
+             <div className="flex flex-wrap gap-2 mt-4">
+               {categories.map(cat => (
+                 <div key={cat} className="flex items-center gap-2 rounded-full bg-zinc-800 px-4 py-2 border border-white/5 group">
+                   <span className="text-[10px] font-black uppercase text-zinc-400">{cat}</span>
+                   {cat !== 'All' && (
+                     <button onClick={() => handleDeleteCategory(cat)} className="text-zinc-600 hover:text-red-500 transition-colors"><X className="h-3 w-3" /></button>
+                   )}
+                 </div>
+               ))}
+             </div>
            </div>
         </div>
       )}
 
-      {isAdding && (
+      {isAdding && activeTab === 'content' && (
         <div className="mb-8 space-y-6 rounded-[32px] bg-zinc-900/50 p-8 border border-white/5 shadow-2xl backdrop-blur-xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
@@ -496,12 +445,8 @@ export default function AdminPanel({ categories }: { categories: string[] }) {
         </div>
       )}
 
-      {loading ? (
-        <div className="flex py-20 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-600 border-t-transparent" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
+      {!isAdding && activeTab === 'content' && (
+        <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em] mb-2 px-1">Recent Posts ({movies.length})</h3>
           {movies.map(movie => (
             <div key={movie.id} className="group flex items-center gap-4 rounded-3xl bg-zinc-900/50 p-3 border border-white/5 hover:bg-zinc-900 transition-all">

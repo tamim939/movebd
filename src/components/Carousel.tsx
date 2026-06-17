@@ -48,11 +48,6 @@ export default function Carousel({ banners, theme, t }: { banners: Banner[], the
               
               <div className="absolute bottom-4 left-4 right-4">
                  <h2 className="text-[13px] font-black text-white mb-1.5 line-clamp-1 drop-shadow-md">{banner.title}</h2>
-                 <div className="flex">
-                   <span className="text-[9px] font-black text-white px-2.5 py-1 bg-[#ff4d00] rounded-lg uppercase tracking-wider shadow-lg shadow-orange-900/20">
-                     {t.comingSoon}
-                   </span>
-                 </div>
               </div>
             </motion.div>
           ))}
